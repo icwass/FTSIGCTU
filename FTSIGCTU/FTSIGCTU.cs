@@ -167,7 +167,7 @@ namespace FTSIGCTU
 					MetricDisplaySwitch = 0;
 					break;
 				case 1:
-					DrawMetricTuple("Latency", simRunning ? latencyValue.method_453() : "----", "Sum", (gold + cycles + area).method_453(), "Sum4", (gold + cycles + area + instructions).method_453(), !isProduction ? "Instrs" : "Area", !isProduction ? instructions.method_453() : (area >= 0 ? area.method_453() : "----"), panel_y);
+					DrawMetricTuple("Latency", simRunning ? latencyValue.method_453() : "----", "Sum", simRunning ? (gold + cycles + area).method_453() : "----", "Sum4", simRunning ? (gold + cycles + area + instructions).method_453() : "----", !isProduction ? "Instrs" : "Area", !isProduction ? instructions.method_453() : (area >= 0 ? area.method_453() : "----"), panel_y);
 					break;
 				//case 1:
 				//	DrawMetricTuple("Products", productFraction, "Arms", arms.method_453(), "Sum", (gold + cycles + area).method_453(), !isProduction ? "Instrs" : "Area", !isProduction ? instructions.method_453() : (area >= 0 ? area.method_453() : "----"), panel_y);
