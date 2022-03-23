@@ -59,7 +59,7 @@ namespace FTSIGCTU
 
 		public class FTSIGCTU_Settings
 		{
-			[SettingsLabel("Display the 'Cost' metric as 'Gold'")]
+			[SettingsLabel("Display the 'Cost' metric as 'Gold'.")]
 			public bool displayCostAsGold = false;
 			[SettingsLabel("Use thicker lines when drawing the current area.")]
 			public bool advancedAreaThick = false;
@@ -536,18 +536,15 @@ namespace FTSIGCTU
 					}
 				}
 			}
-
 			//parts list
-			int arms = 0;////////////////////////////////////
-			int grippers = 0;////////////////////////////////////
-			int track = 0;////////////////////////////////////
+			int arms = 0;
+			int grippers = 0;
+			int track = 0;
 			int overlaps = 0;////////////////////////////////////
-			
-			var solution = new DynamicData(SES).Get<Solution>("field_4004");
 
+			var solution = new DynamicData(SES).Get<Solution>("field_4004");
 			if (DEBUG) DEBUG_script(solution);
 			DEBUG = false;
-
 			foreach (Part part in solution.field_3919)
 			{
 				PartType partType = part.method_1159();
@@ -557,17 +554,22 @@ namespace FTSIGCTU
 				var HexList1 = new DynamicData(part).Get<List<HexIndex>>("field_2700");
 				if (HexList1 != null) track += HexList1.Count;
 			}
-
 			//instruction grid
-			CompiledProgramGrid programGrid = Sim.method_1824((SolutionEditorBase)SES).method_1087().method_1820();
-			var programGridDict = new DynamicData(programGrid).Get<Dictionary<Part, CompiledProgram>>("field_2368");
-			int instructions = programGrid.method_854();
-			int period = 0;
-			int vintage_instructions = 0;
-			int assembly_instructions = 0;
-			if (programGridDict.Count > 0)
+			int instructions = -1;
+			int period = -1;
+			int vintage_instructions = -1;
+			int assembly_instructions = -1;
+
+			maybeSim = Sim.method_1824((SolutionEditorBase)SES);
+
+			if (maybeSim.method_1085())
 			{
-				//
+				CompiledProgramGrid compiledProgramGrid = maybeSim.method_1087().method_1820();
+				var programGridDict = new DynamicData(compiledProgramGrid).Get<Dictionary<Part, CompiledProgram>>("field_2368");
+				instructions = compiledProgramGrid.method_854();
+				period = 0;
+				vintage_instructions = 0;
+				assembly_instructions = 0;
 				foreach (var ENTRY in programGridDict)
 				{
 					//count assembly instructions
@@ -611,26 +613,37 @@ namespace FTSIGCTU
 				}
 			}
 
+			
+
 			///////////////////
 			//display metrics//
 			///////////////////
+			
+			string FUNC(int n)
+			{
+				return n >= 0 ? n.method_453() : "----";
+			}
+
 			string productFraction = simRunning ? string.Format("{0}/{1}", (object)productsAccepted, (object)productsExpected) : "----";
 			double geomean = Math.Pow(gold * cycles * (isProduction ? instructions : area), 1.0 / 3.0);
 			string geomeanString = Math.Round(geomean,2).ToString();
+
+			int sum = gold + cycles + (isProduction ? instructions : area);
+
 			switch (MetricDisplaySwitch)
 			{
 				default:
-					DrawMetricTuple("Products", productFraction, CostMetric, gold.method_453() + "$", "Cycles", simRunning ? cycles.method_453() : "----", isProduction ? "Instrs" : "Area", isProduction ? instructions.method_453() : (area >= 0 ? area.method_453() : "----"), panel_y);
+					DrawMetricTuple("Products", productFraction, CostMetric, gold.method_453() + "$", "Cycles", simRunning ? cycles.method_453() : "----", isProduction ? "Instrs" : "Area", isProduction ? FUNC(instructions) : (area >= 0 ? area.method_453() : "----"), panel_y);
 					MetricDisplaySwitch = 0;
 					break;
 				case 1:
-					DrawMetricTuple("Latency", simRunning ? latencyValue.method_453() : "----", "Sum", simRunning ? (gold + cycles + (isProduction ? instructions : area)).method_453() : "----", "Sum4", simRunning ? (gold + cycles + area + instructions).method_453() : "----", !isProduction ? "Instrs" : "Area", !isProduction ? instructions.method_453() : (area >= 0 ? area.method_453() : "----"), panel_y);
+					DrawMetricTuple("Latency", simRunning ? latencyValue.method_453() : "----", "Sum", simRunning ? sum.method_453() : "----", "Sum4", simRunning ? (gold + cycles + area + instructions).method_453() : "----", !isProduction ? "Instrs" : "Area", !isProduction ? FUNC(instructions) : (area >= 0 ? area.method_453() : "----"), panel_y);
 					break;
 				case 2:
 					DrawMetricTuple("Overlaps", /*overlaps.method_453()*/"<null>", "Track", track.method_453(), "Height", simRunning ? heightValue.method_453() : "----", "Width", simRunning ? (widthValue / 2).method_453() + (widthValue % 2==0 ? ".0" : ".5") : "----", panel_y);
 					break;
 				case 3:
-					DrawMetricTuple("Period", period.method_453(), "Geo-mean", simRunning ? geomeanString : "----", "Vtg I", vintage_instructions.method_453(), "Assm I", assembly_instructions.method_453(), panel_y);
+					DrawMetricTuple("Period", FUNC(period), "Geo-mean", simRunning ? geomeanString : "----", "Vtg I", FUNC(vintage_instructions), "Assm I", FUNC(assembly_instructions), panel_y);
 					break;
 				case 4:
 					DrawMetricTuple("Blueprint", blueprintValue.method_453(), "Arms", arms.method_453(), "Grippers", grippers.method_453(), "----", "----", panel_y);
