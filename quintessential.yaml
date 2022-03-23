@@ -1,6 +1,6 @@
 Name: FTSIGCTU
-Version: 0.0.1
-Desc: "\"Finally, This Setup Is Getting Close To Usable.\"\n\nAdds several quality-of-life features that are tournament-friendly, including:\n- More metrics in solution editor (cycle with '6')\n\nPOSSIBLE UPCOMING FEATURES:\n- Even more metrics in the solution editor\n- Making empty-programs giffable\n- Set the gif maker's start/stop cycle\n- Move the camera to the Critelli\n- Move to start or end of the program tape\n- Hide the program tray ('5')\n- Adjustable simulation speed\n- Improved zoom\n- Change the gif maker's position/zoom.\n- Allow puzzles to specify the default metrics (useful for puzzles from tournaments past)"
+Version: 0.0.3
+Desc: "\"Finally, This Setup Is Getting Close To Usable.\"\n\nAdds several quality-of-life features that are tournament-friendly. For full information and controls, visit: https://github.com/icwass/FTSIGCTU/wiki"
 DLL: "FTSIGCTU/bin/Debug/net451/FTSIGCTU.dll"
 Dependencies:
 - Name: Quintessential
