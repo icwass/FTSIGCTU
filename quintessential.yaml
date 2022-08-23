@@ -1,0 +1,11 @@
+Name: MODNAME
+Version: 0.0.1
+#Icon: mod_icon.png
+Title: MOD TITLE
+Desc: MOD DESCRIPTION
+DLL: "MODNAME/bin/Debug/net452/MODNAME.dll"
+Dependencies:
+- Name: Quintessential
+  Version: 0.3.0
+#OptionalDependencies
+#Mappings:

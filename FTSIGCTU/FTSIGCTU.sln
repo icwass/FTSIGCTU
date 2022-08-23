@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31320.298
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FTSIGCTU", "FTSIGCTU.csproj", "{30EC82FF-1693-42E0-B08B-F1C80850C54E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{30EC82FF-1693-42E0-B08B-F1C80850C54E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30EC82FF-1693-42E0-B08B-F1C80850C54E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30EC82FF-1693-42E0-B08B-F1C80850C54E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30EC82FF-1693-42E0-B08B-F1C80850C54E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4CAC24BA-7931-4153-B5D7-84E44C8E4B38}
+	EndGlobalSection
+EndGlobal

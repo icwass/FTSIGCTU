@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net452</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <LangVersion>10</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="MMHOOK_ModdedLightning">
+      <HintPath>bin\Debug\net452\MMHOOK_ModdedLightning.dll</HintPath>
+    </Reference>
+    <Reference Include="Lightning">
+      <HintPath>bin\Debug\net452\ModdedLightning.exe</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil">
+      <HintPath>bin\Debug\net452\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoMod.RuntimeDetour">
+      <HintPath>bin\Debug\net452\MonoMod.RuntimeDetour.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoMod.Utils">
+      <HintPath>bin\Debug\net452\MonoMod.Utils.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
