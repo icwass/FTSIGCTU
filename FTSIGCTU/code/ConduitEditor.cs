@@ -101,6 +101,7 @@ public static class ConduitEditor
 
 	public static void SolutionEditorScreen_method_50(SolutionEditorScreen SES_self)
 	{
+		if (!allowConduitEditor) return;
 		var current_interface = SES_self.field_4010;
 
 		if (current_interface.GetType() == (new NormalInputMode()).GetType() && Input.IsControlHeld() && Input.IsSdlKeyPressed(editingKey))
