@@ -45,12 +45,16 @@ public static class common
 	//part-editing helpers
 	public static HexIndex getPartOrigin(Part part)
 	{
-		var part_dyn = new DynamicData(part);
-		return part_dyn.Get<HexIndex>("field_2692");
+		return part.method_1161();
 	}
 	public static void setPartOrigin(Part part, HexIndex hex)
 	{
+		//easier than trying to invoke method_1162, which is private
 		new DynamicData(part).Set("field_2692", hex);
+	}
+	public static void addUndoHistoryCheckpoint(SolutionEditorScreen SES_self)
+	{
+		SES_self.method_502().method_1961();
 	}
 	//---------------------------------------------------//
 	public static void ApplySettings(bool _drawThickHexes)

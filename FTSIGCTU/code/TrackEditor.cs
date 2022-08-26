@@ -1,11 +1,11 @@
-﻿using MonoMod.RuntimeDetour;
+﻿//using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
 using Quintessential;
 using SDL2;
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Reflection;
+//using System.Reflection;
 
 namespace FTSIGCTU;
 using PartType = class_139;
@@ -16,6 +16,7 @@ public static class TrackEditor
 	//data structs, enums, variables
 	private static bool allowQuantumTracking = false;
 	private static bool alsoReverseArms = true;
+	private static SDL.enum_160 editingKey = SDL.enum_160.SDLK_g;
 
 	private static editingModeType editingMode = editingModeType.none;
 	private static HexIndex editHex1 = new HexIndex(0, 0);
@@ -32,7 +33,7 @@ public static class TrackEditor
 	private static Texture[] textures;
 	private static Sound[] sounds;
 
-	private enum resource
+	private enum resource : byte
 	{
 		merge,
 		split,
@@ -50,7 +51,7 @@ public static class TrackEditor
 	}
 
 	//---------------------------------------------------//
-	//internal methods
+	//internal helper methods
 	private static bool PartIsTrack(Part part) => part.method_1159() == class_191.field_1770;
 
 	private static List<HexIndex> getTrackList(Part part)
@@ -95,7 +96,9 @@ public static class TrackEditor
 		}
 		return list;
 	}
-	//-----//
+
+	//---------------------------------------------------//
+	//internal main methods
 	private static bool mergeTracks(HexIndex HEX1, HexIndex HEX2, Solution SOLUTION)
 	{
 		//returns true if we need to save partState to undo/redo history because the parts list was modified
@@ -337,7 +340,6 @@ public static class TrackEditor
 		{
 			//enter another editingMode if needed, process stuff as needed
 			bool saveChangesManually = false;
-			var editingKey = SDL.enum_160.SDLK_g;
 
 			switch (editingMode)
 			{
@@ -382,8 +384,7 @@ public static class TrackEditor
 
 			if (saveChangesManually)
 			{
-				//save partState to undo/redo history
-				SES_self.method_502().method_1961();
+				common.addUndoHistoryCheckpoint(SES_self);
 			}
 		}
 

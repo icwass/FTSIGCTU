@@ -29,13 +29,17 @@ public class MainClass : QuintessentialMod
 		public bool alsoReverseArms = true;
 		[SettingsLabel("Allow the creation of disjoint (i.e. 'quantum') tracks.")]
 		public bool allowQuantumTracking = false;
+		[SettingsLabel("Allow conduits to be created, destroyed, and swapped around.")]
+		public bool allowConduitEditor = false;
 	}
 	public override void ApplySettings()
 	{
 		base.ApplySettings();
 
-		common.ApplySettings(((MySettings)(Settings)).drawThickHexes);
-		TrackEditor.ApplySettings(((MySettings)(Settings)).alsoReverseArms, ((MySettings)(Settings)).allowQuantumTracking);
+		var SET = (MySettings)Settings;
+		common.ApplySettings(SET.drawThickHexes);
+		TrackEditor.ApplySettings(SET.alsoReverseArms, SET.allowQuantumTracking);
+		ConduitEditor.ApplySettings(SET.allowConduitEditor);
 	}
 	public override void Load()
 	{
@@ -44,6 +48,7 @@ public class MainClass : QuintessentialMod
 	public override void LoadPuzzleContent()
 	{
 		TrackEditor.LoadPuzzleContent();
+		ConduitEditor.LoadPuzzleContent();
 	}
 	public override void Unload() { }
 	public override void PostLoad()
@@ -53,6 +58,7 @@ public class MainClass : QuintessentialMod
 	}
 	public void SES_Method_50(On.SolutionEditorScreen.orig_method_50 orig, SolutionEditorScreen SES_self, float param_5703)
 	{
+		ConduitEditor.SolutionEditorScreen_method_50(SES_self);
 		orig(SES_self, param_5703);
 		TrackEditor.SolutionEditorScreen_method_50(SES_self);
 	}
