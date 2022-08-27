@@ -30,8 +30,8 @@ public static class ConduitEditor
 
 	//---------------------------------------------------//
 	//internal helper methods
-	private static bool PartIsConduit(Part part) => part.method_1159() == class_191.field_1763;
-	private static bool PartIsEquilibrium(Part part) => part.method_1159() == class_191.field_1782;
+	private static bool PartIsConduit(Part part) => part.method_1159() == common.IOConduit();
+	private static bool PartIsEquilibrium(Part part) => part.method_1159() == common.GlyphEquilibrium();
 	private static int ConduitIndex(Part part) => part.field_2703;
 
 	//---------------------------------------------------//

@@ -49,6 +49,7 @@ public class MainClass : QuintessentialMod
 	{
 		TrackEditor.LoadPuzzleContent();
 		ConduitEditor.LoadPuzzleContent();
+		MirrorTool.LoadPuzzleContent();
 	}
 	public override void Unload() { }
 	public override void PostLoad()
@@ -59,6 +60,7 @@ public class MainClass : QuintessentialMod
 	public void SES_Method_50(On.SolutionEditorScreen.orig_method_50 orig, SolutionEditorScreen SES_self, float param_5703)
 	{
 		ConduitEditor.SolutionEditorScreen_method_50(SES_self);
+		MirrorTool.SolutionEditorScreen_method_50(SES_self);
 		orig(SES_self, param_5703);
 		TrackEditor.SolutionEditorScreen_method_50(SES_self);
 	}

@@ -52,36 +52,14 @@ public static class TrackEditor
 
 	//---------------------------------------------------//
 	//internal helper methods
-	private static bool PartIsTrack(Part part) => part.method_1159() == class_191.field_1770;
+	private static bool PartIsTrack(Part part) => part.method_1159() == common.MechanismTrack();
 
-	private static List<HexIndex> getTrackList(Part part)
-	{
-		var part_dyn = new DynamicData(part);
-		var trackList = part_dyn.Get<List<HexIndex>>("field_2700");
-		var origin = common.getPartOrigin(part);
-		var list = new List<HexIndex>();
-		foreach (HexIndex hex in trackList)
-		{
-			list.Add(hex + origin);
-		}
-		return list;
-	}
-	private static void setTrackList(Part part, List<HexIndex> list)
-	{
-		var origin = common.getPartOrigin(part);
-		var trackList = new List<HexIndex>();
-		foreach (HexIndex hex in list)
-		{
-			trackList.Add(hex - origin);
-		}
-		new DynamicData(part).Set("field_2700", trackList);
-	}
 	private static bool isTrackAtHex(HexIndex HEX, Solution SOLUTION)
 	{
 		var partList = SOLUTION.field_3919;
 		foreach (Part part in partList.Where(x => PartIsTrack(x)))
 		{
-			foreach (HexIndex hex in getTrackList(part)) if (HEX == hex) return true;
+			foreach (HexIndex hex in common.getTrackList(part)) if (HEX == hex) return true;
 		}
 		return false;
 	}
@@ -103,7 +81,7 @@ public static class TrackEditor
 	{
 		//returns true if we need to save partState to undo/redo history because the parts list was modified
 		List<Part> trackParts = filterTrackFromSolution(SOLUTION, x => {
-			var list = getTrackList(x);
+			var list = common.getTrackList(x);
 			if (list.Contains(HEX1) && list.Contains(HEX2))
 			{
 				//don't include tracks that have both hexes
@@ -125,7 +103,7 @@ public static class TrackEditor
 
 		foreach (Part part in trackParts)
 		{
-			var list = getTrackList(part);
+			var list = common.getTrackList(part);
 			var first = list[0];
 			var last = list[list.Count() - 1];
 			if (first == last)
@@ -157,10 +135,10 @@ public static class TrackEditor
 				partList.Remove(pos);
 				partList.Remove(neg);
 				//merge them together
-				var posTracks = getTrackList(pos);
-				var negTracks = getTrackList(neg);
+				var posTracks = common.getTrackList(pos);
+				var negTracks = common.getTrackList(neg);
 				posTracks.AddRange(negTracks);
-				setTrackList(pos, posTracks);
+				common.setTrackList(pos, posTracks);
 				partList.Add(pos);
 				PartListWasChanged = true;
 			}
@@ -187,7 +165,7 @@ public static class TrackEditor
 		//this is because we don't need to manually save partState to the undo/redo history,
 		//since method_1175 seems to do this for us
 		List<Part> trackParts = filterTrackFromSolution(SOLUTION, x => {
-			var list = getTrackList(x);
+			var list = common.getTrackList(x);
 			if (!list.Contains(HEX1)) return false;
 			if (!list.Contains(HEX2)) return false;
 			//list contains both hexes, so list.Count() >= 2
@@ -208,7 +186,7 @@ public static class TrackEditor
 			List<int> heads = new List<int>() { 0 };
 			List<int> tails = new List<int>();
 			int count = 1;
-			var list = getTrackList(part);
+			var list = common.getTrackList(part);
 			//list contains both HEX1 and HEX2, so list.Count() >= 2
 			for (int i = 1; i < list.Count(); i++)
 			{
@@ -223,8 +201,8 @@ public static class TrackEditor
 			//for each segment of track, clone a new part
 			for (int i = 0; i < count; i++)
 			{
-				Part clone = part.method_1175(SOLUTION, (Maybe<Part>)struct_18.field_1431);
-				setTrackList(clone, list.GetRange(heads[i], tails[i] - heads[i] + 1));
+				Part clone = common.clonePart(part);
+				common.setTrackList(clone, list.GetRange(heads[i], tails[i] - heads[i] + 1));
 				partList.Add(clone);
 			}
 		}
@@ -235,7 +213,7 @@ public static class TrackEditor
 	private static bool reverseTrack(HexIndex HEX, Solution SOLUTION)
 	{
 		//returns true if we need to save partState to undo/redo history because the parts list was modified
-		List<Part> trackParts = filterTrackFromSolution(SOLUTION, x => getTrackList(x).Contains(HEX));
+		List<Part> trackParts = filterTrackFromSolution(SOLUTION, x => common.getTrackList(x).Contains(HEX));
 		if (trackParts.Count() == 0) return false;
 
 		//reverse tracks
@@ -244,10 +222,10 @@ public static class TrackEditor
 		foreach (Part part in trackParts)
 		{
 			partList.Remove(part);
-			var trackList = getTrackList(part);
+			var trackList = common.getTrackList(part);
 			hexUnion.UnionWith(trackList);
 			trackList.Reverse();
-			setTrackList(part, trackList);
+			common.setTrackList(part, trackList);
 			partList.Add(part);
 		}
 		common.playSound(sounds[(int)resource.reverse], 0.5f);
@@ -290,18 +268,18 @@ public static class TrackEditor
 	{
 		//returns true if we need to save partState to undo/redo history because the parts list was modified
 		if (!allowQuantumTracking) return false;
-		List<Part> trackParts = filterTrackFromSolution(SOLUTION, x => getTrackList(x).Contains(HEX));
+		List<Part> trackParts = filterTrackFromSolution(SOLUTION, x => common.getTrackList(x).Contains(HEX));
 		if (trackParts.Count() == 0) return false;
 		
 		var partList = SOLUTION.field_3919;
 		foreach (Part part in trackParts)
 		{
 			partList.Remove(part);
-			var trackList = getTrackList(part);
+			var trackList = common.getTrackList(part);
 			trackList.RemoveAll(x => x == HEX);
 			if (trackList.Count() != 0)
 			{
-				setTrackList(part, trackList);
+				common.setTrackList(part, trackList);
 				partList.Add(part);
 			}
 		}
