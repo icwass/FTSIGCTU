@@ -183,27 +183,13 @@ public static class MirrorTool
 		{
 			var interfaceDyn = new DynamicData(current_interface);
 			var draggedParts = interfaceDyn.Get<List<PartDraggingInputMode.DraggedPart>>("field_2712");
-			if (draggedParts.Count == 0) return;
 			if (draggedParts.Any(x => !mirrorRules.Keys.Contains(getDraggedPartType(x)) && true))
 			{
 				common.playSound(sounds[(int)resource.failure], 0.2f);
 				return;
 			}
-
-			//otherwise the non-empty selection can be mirrored
+			//otherwise the selection can be mirrored
 			var mirroredDraggedParts = new List<PartDraggingInputMode.DraggedPart>();
-
-			//not sure how to get y value of part we picked up, so we'll just do this - good enough
-			int maxY = common.getPartOrigin(draggedParts[0].field_2722).R;
-			int minY = common.getPartOrigin(draggedParts[0].field_2722).R;
-
-			foreach (var draggedPart in draggedParts)
-			{
-				maxY = Math.Max(maxY, common.getPartOrigin(draggedPart.field_2722).R);
-				minY = Math.Min(minY, common.getPartOrigin(draggedPart.field_2722).R);
-			}
-			int y = (int) Math.Round(0.5 * (float)(maxY + minY));
-
 			foreach (var draggedPart in draggedParts)
 			{
 				PartType draggedPartType = getDraggedPartType(draggedPart);
