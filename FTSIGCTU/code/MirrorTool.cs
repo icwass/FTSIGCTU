@@ -1,7 +1,7 @@
 ﻿//using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
 using Quintessential;
-//using SDL2;
+using SDL2;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -14,6 +14,8 @@ public static class MirrorTool
 {
 	//data structs, enums, variables
 	private static Sound[] sounds;
+	private static SDL.enum_160 mirrorVerticalKey = SDL.enum_160.SDLK_g;
+	private static SDL.enum_160 mirrorHorizontalKey = SDL.enum_160.SDLK_h;
 
 	private static Dictionary<PartType, mirrorRule> mirrorRules;
 
@@ -229,12 +231,18 @@ public static class MirrorTool
 	{
 		var current_interface = SES_self.field_4010;
 		bool inDraggingMode = current_interface.GetType() == (new PartDraggingInputMode()).GetType();
+		bool mirrorHorz = Input.IsSdlKeyPressed(mirrorHorizontalKey);
+		bool mirrorVert = Input.IsSdlKeyPressed(mirrorVerticalKey);
 
-		if (inDraggingMode && Input.IsRightClickPressed())
+		if (inDraggingMode && (mirrorHorz || mirrorVert))
 		{
 			var interfaceDyn = new DynamicData(current_interface);
 			var draggedParts = interfaceDyn.Get<List<PartDraggingInputMode.DraggedPart>>("field_2712");
-			if (draggedParts.Any(x => !mirrorRules.Keys.Contains(getDraggedPartType(x)) || !mirrorRules[getDraggedPartType(x)].validator(x.field_2722)))
+			var cursorHex = interfaceDyn.Get<HexIndex>("field_2715");
+
+			bool horizontalVersusInfinite = mirrorHorz && draggedParts.Any(x => getDraggedPartType(x) == common.IOOutputInfinite());
+			bool somePartCannotBeMirrored = draggedParts.Any(x => !mirrorRules.Keys.Contains(getDraggedPartType(x)) || !mirrorRules[getDraggedPartType(x)].validator(x.field_2722));
+			if (horizontalVersusInfinite || somePartCannotBeMirrored)
 			{
 				common.playSound(sounds[(int)resource.failure], 0.2f);
 				return;
@@ -244,8 +252,15 @@ public static class MirrorTool
 			foreach (var draggedPart in draggedParts)
 			{
 				PartType draggedPartType = getDraggedPartType(draggedPart);
-				var clonedPart = common.clonePart(draggedPart.field_2722);
-				mirrorRules[draggedPartType].rule(clonedPart, interfaceDyn.Get<HexIndex>("field_2715").R);
+				var part = draggedPart.field_2722;
+				var clonedPart = common.clonePart(part);
+				mirrorRules[draggedPartType].rule(clonedPart, cursorHex.R);
+				if (mirrorHorz)
+				{
+					//internal loop of method_1215
+					clonedPart.method_1195(clonedPart.method_1161().RotatedAround(cursorHex, HexRotation.R180));
+					clonedPart.method_1197(SES_self.method_502(), HexRotation.R180);
+				}
 				var mirrorDraggedPart = new PartDraggingInputMode.DraggedPart()
 				{
 					field_2722 = clonedPart,
@@ -254,6 +269,7 @@ public static class MirrorTool
 				};
 				mirroredDraggedParts.Add(mirrorDraggedPart);
 			}
+
 			interfaceDyn.Set("field_2712", mirroredDraggedParts);
 			common.playSound(sounds[(int)resource.success], 0.2f);
 		}
