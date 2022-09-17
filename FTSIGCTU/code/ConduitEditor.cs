@@ -104,6 +104,35 @@ public static class ConduitEditor
 		if (!allowConduitEditor) return;
 		var current_interface = SES_self.field_4010;
 
+
+		///////////////////////////////////
+		//temporary code that can change an instruction to a BLANK or OVERRIDE instruction
+		if (current_interface.GetType() == (new class_217()).GetType())
+		{
+			var interfaceDyn = new DynamicData(current_interface);
+			var draggedInstructions = interfaceDyn.Get<List<class_217.class_220>>("field_1908");
+
+			if (draggedInstructions.Count == 1)
+			{
+				if (Input.IsSdlKeyPressed(SDL.enum_160.SDLK_b))
+				{
+					InstructionType BlankInstruction = class_169.field_1653;
+					if (Input.IsShiftHeld())
+					{
+						BlankInstruction = class_169.field_1654;
+					}
+					draggedInstructions[0].field_1912 = BlankInstruction;
+					interfaceDyn.Set("field_1908", draggedInstructions);
+				}
+				if (Input.IsSdlKeyPressed(SDL.enum_160.SDLK_o))
+				{
+					draggedInstructions[0].field_1912 = class_169.field_1652; // override
+					interfaceDyn.Set("field_1908", draggedInstructions);
+				}
+			}
+		}
+		///////////////////////////////////
+
 		if (current_interface.GetType() == (new NormalInputMode()).GetType() && Input.IsControlHeld() && Input.IsSdlKeyPressed(editingKey))
 		{
 			//we are trying to either create or destroy conduit
