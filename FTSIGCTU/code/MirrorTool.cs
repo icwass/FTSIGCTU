@@ -14,8 +14,8 @@ public static class MirrorTool
 {
 	//data structs, enums, variables
 	private static Sound[] sounds;
-	private static SDL.enum_160 mirrorVerticalKey = SDL.enum_160.SDLK_g;
-	private static SDL.enum_160 mirrorHorizontalKey = SDL.enum_160.SDLK_h;
+	private static SDL.enum_160 mirrorVerticalKey = SDL.enum_160.SDLK_q;
+	private static SDL.enum_160 mirrorHorizontalKey = SDL.enum_160.SDLK_e;
 
 	private static Dictionary<PartType, mirrorRule> mirrorRules;
 

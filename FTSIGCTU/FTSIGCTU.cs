@@ -20,6 +20,8 @@ namespace FTSIGCTU;
 
 public class MainClass : QuintessentialMod
 {
+	public static bool disableOverlapDetection = false;
+	
 	public override Type SettingsType => typeof(MySettings);
 	public class MySettings
 	{
@@ -31,6 +33,8 @@ public class MainClass : QuintessentialMod
 		public bool allowQuantumTracking = false;
 		[SettingsLabel("Allow conduits to be created, destroyed, and swapped around.")]
 		public bool allowConduitEditor = false;
+		[SettingsLabel("Disable overlap detection.")]
+		public bool disableOverlapDetection = false;
 	}
 	public override void ApplySettings()
 	{
@@ -40,6 +44,8 @@ public class MainClass : QuintessentialMod
 		common.ApplySettings(SET.drawThickHexes);
 		TrackEditor.ApplySettings(SET.alsoReverseArms, SET.allowQuantumTracking);
 		ConduitEditor.ApplySettings(SET.allowConduitEditor);
+
+		disableOverlapDetection = SET.disableOverlapDetection;
 	}
 	public override void Load()
 	{
@@ -56,6 +62,10 @@ public class MainClass : QuintessentialMod
 	{
 		On.SolutionEditorScreen.method_50 += SES_Method_50;
 		On.class_153.method_221 += c153_Method_221;
+
+		On.Solution.method_1947 += Solution_method_1947;
+		On.Sim.method_1824 += Sim_method_1824;
+		//(this == Solution) HashSet<HexIndex> method_1947(Maybe<Part> param_5487, enum_137 param_5488)
 	}
 	public void SES_Method_50(On.SolutionEditorScreen.orig_method_50 orig, SolutionEditorScreen SES_self, float param_5703)
 	{
@@ -69,4 +79,60 @@ public class MainClass : QuintessentialMod
 		orig(c153_self, param_3616);
 		TrackEditor.class153_method_221(c153_self);
 	}
+	public HashSet<HexIndex> Solution_method_1947(On.Solution.orig_method_1947 orig, Solution solution_self, Maybe<Part> param_5487, enum_137 param_5488)
+	{
+		if (disableOverlapDetection)
+		{
+			return new HashSet<HexIndex>();
+		}
+		else
+		{
+			return orig(solution_self, param_5487, param_5488);
+		}
+	}
+
+
+	public static Maybe<Sim> Sim_method_1824(On.Sim.orig_method_1824 orig, SolutionEditorBase param_5365)
+	{
+		var ret = orig(param_5365).method_1087();
+		if (disableOverlapDetection)
+		{
+			//method_1947 was disabled, so we need to add some area hexes manually
+			HashSet<HexIndex> hashSet = new();
+			//hashSet = param_5365.method_502().method_1947((Maybe<Part>)struct_18.field_1431, (enum_137)0)
+			{
+				HashSet<HexIndex> hexIndexSet1 = new HashSet<HexIndex>();
+				var THIS = param_5365.method_502();
+				foreach (Part part in THIS.field_3919)
+				{
+					if ((Maybe<Part>)part != (Maybe<Part>)struct_18.field_1431)
+					{
+						HashSet<HexIndex> hexIndexSet2 = part.method_1187(THIS, (enum_137)0, part.method_1161(), part.method_1163());
+						hexIndexSet1.UnionWith((IEnumerable<HexIndex>)hexIndexSet2);
+					}
+				}
+				hashSet = hexIndexSet1;
+			}
+			foreach (HexIndex hexIndex in hashSet)
+			{
+				ret.field_3824.Add(hexIndex);
+			}
+		}
+
+		return ret;
+	}
+
+	//public HashSet<HexIndex> method_1947(Maybe<Part> param_5487, enum_137 param_5488)
+	//{
+	//	HashSet<HexIndex> hexIndexSet1 = new HashSet<HexIndex>();
+	//	foreach (Part part in this.field_3919)
+	//	{
+	//		if ((Maybe<Part>) part != param_5487)
+	//		{
+	//		HashSet<HexIndex> hexIndexSet2 = part.method_1187(this, param_5488, part.method_1161(), part.method_1163());
+	//		hexIndexSet1.UnionWith((IEnumerable<HexIndex>) hexIndexSet2);
+	//		}
+	//	}
+	//	return hexIndexSet1;
+	//}
 }
