@@ -94,45 +94,34 @@ public class MainClass : QuintessentialMod
 
 	public static Maybe<Sim> Sim_method_1824(On.Sim.orig_method_1824 orig, SolutionEditorBase param_5365)
 	{
-		var ret = orig(param_5365).method_1087();
-		if (disableOverlapDetection)
+		var maybeRet = orig(param_5365);
+		if (!disableOverlapDetection || !maybeRet.method_1085())
 		{
-			//method_1947 was disabled, so we need to add some area hexes manually
-			HashSet<HexIndex> hashSet = new();
-			//hashSet = param_5365.method_502().method_1947((Maybe<Part>)struct_18.field_1431, (enum_137)0)
+			return maybeRet;
+		}
+
+		var ret = maybeRet.method_1087();
+		//method_1947 was disabled, so we need to add some area hexes manually
+		HashSet<HexIndex> hashSet = new();
+		//hashSet = param_5365.method_502().method_1947((Maybe<Part>)struct_18.field_1431, (enum_137)0)
+		{
+			HashSet<HexIndex> hexIndexSet1 = new HashSet<HexIndex>();
+			var THIS = param_5365.method_502();
+			foreach (Part part in THIS.field_3919)
 			{
-				HashSet<HexIndex> hexIndexSet1 = new HashSet<HexIndex>();
-				var THIS = param_5365.method_502();
-				foreach (Part part in THIS.field_3919)
+				if ((Maybe<Part>)part != (Maybe<Part>)struct_18.field_1431)
 				{
-					if ((Maybe<Part>)part != (Maybe<Part>)struct_18.field_1431)
-					{
-						HashSet<HexIndex> hexIndexSet2 = part.method_1187(THIS, (enum_137)0, part.method_1161(), part.method_1163());
-						hexIndexSet1.UnionWith((IEnumerable<HexIndex>)hexIndexSet2);
-					}
+					HashSet<HexIndex> hexIndexSet2 = part.method_1187(THIS, (enum_137)0, part.method_1161(), part.method_1163());
+					hexIndexSet1.UnionWith((IEnumerable<HexIndex>)hexIndexSet2);
 				}
-				hashSet = hexIndexSet1;
 			}
-			foreach (HexIndex hexIndex in hashSet)
-			{
-				ret.field_3824.Add(hexIndex);
-			}
+			hashSet = hexIndexSet1;
+		}
+		foreach (HexIndex hexIndex in hashSet)
+		{
+			ret.field_3824.Add(hexIndex);
 		}
 
 		return ret;
 	}
-
-	//public HashSet<HexIndex> method_1947(Maybe<Part> param_5487, enum_137 param_5488)
-	//{
-	//	HashSet<HexIndex> hexIndexSet1 = new HashSet<HexIndex>();
-	//	foreach (Part part in this.field_3919)
-	//	{
-	//		if ((Maybe<Part>) part != param_5487)
-	//		{
-	//		HashSet<HexIndex> hexIndexSet2 = part.method_1187(this, param_5488, part.method_1161(), part.method_1163());
-	//		hexIndexSet1.UnionWith((IEnumerable<HexIndex>) hexIndexSet2);
-	//		}
-	//	}
-	//	return hexIndexSet1;
-	//}
 }
