@@ -133,6 +133,34 @@ public static class ConduitEditor
 		}
 		///////////////////////////////////
 
+
+
+
+		///////////////////////////////////
+		//temporary code that can duplicate an input, berlo wheel or disposal
+		if (current_interface.GetType() == (new NormalInputMode()).GetType() && Input.IsControlHeld() && Input.IsSdlKeyPressed(SDL.enum_160.SDLK_h))
+		{
+			class_6 partSelection = SES_self.field_4011;
+			int sizeOfSelection = partSelection.method_13();
+			if (sizeOfSelection == 1)
+			{
+				Part part = partSelection.method_14().ToList()[0];
+				if (part.method_1159() == common.IOInput() || part.method_1159() == common.GlyphDisposal() || part.method_1159() == common.MechanismBerlo())
+				{
+					var SOLUTION = SES_self.method_502();
+					var partList = SOLUTION.field_3919;
+					partList.Add(part.method_1175(SOLUTION, (Maybe<Part>)struct_18.field_1431));
+					common.playSound(sounds[(int)resource.create], 0.2f);
+					common.addUndoHistoryCheckpoint(SES_self);
+				}
+			}
+		}
+
+		///////////////////////////////////
+
+
+
+
 		if (current_interface.GetType() == (new NormalInputMode()).GetType() && Input.IsControlHeld() && Input.IsSdlKeyPressed(editingKey))
 		{
 			//we are trying to either create or destroy conduit
