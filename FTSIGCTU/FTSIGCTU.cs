@@ -43,6 +43,8 @@ public class MainClass : QuintessentialMod
 		public bool drawBlanksOnProgrammingTray = false;
 		[SettingsLabel("Allow multiple Period Override instructions.")]
 		public bool allowMultipleOverrides = false;
+		[SettingsLabel("Allow duplicate Disposals, Berlos, inputs and outputs.")]
+		public bool allowDuplicateParts = false;
 
 		//need to put this somewhere
 		[SettingsLabel("Disable overlap detection.")]
@@ -57,6 +59,7 @@ public class MainClass : QuintessentialMod
 		TrackEditor.ApplySettings(SET.alsoReverseArms, SET.allowQuantumTracking);
 		ConduitEditor.ApplySettings(SET.allowConduitEditor);
 		InstructionEditor.ApplySettings(SET.drawBlanksOnProgrammingTray, SET.allowMultipleOverrides);
+		Miscellaneous.ApplySettings(SET.allowDuplicateParts);
 
 		disableOverlapDetection = SET.disableOverlapDetection;
 	}
@@ -70,6 +73,7 @@ public class MainClass : QuintessentialMod
 		ConduitEditor.LoadPuzzleContent();
 		InstructionEditor.LoadPuzzleContent();
 		MirrorTool.LoadPuzzleContent();
+		Miscellaneous.LoadPuzzleContent();
 	}
 
 	public override void Unload()
@@ -91,6 +95,7 @@ public class MainClass : QuintessentialMod
 	{
 		ConduitEditor.SolutionEditorScreen_method_50(SES_self);
 		MirrorTool.SolutionEditorScreen_method_50(SES_self);
+		Miscellaneous.SolutionEditorScreen_method_50(SES_self);
 		orig(SES_self, param_5703);
 		TrackEditor.SolutionEditorScreen_method_50(SES_self);
 	}

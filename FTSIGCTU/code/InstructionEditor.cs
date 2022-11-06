@@ -92,6 +92,7 @@ public static class InstructionEditor
 	{
 		drawBlanksOnProgrammingTray = _drawBlanksOnProgrammingTray;
 
+		//decide whether more than one override can be placed
 		class_169.field_1652.field_2551 = !_allowMultipleOverrides;
 	}
 }
