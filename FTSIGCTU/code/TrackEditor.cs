@@ -8,7 +8,6 @@ using System.Collections.Generic;
 //using System.Reflection;
 
 namespace FTSIGCTU;
-using PartType = class_139;
 using Texture = class_256;
 
 public static class TrackEditor

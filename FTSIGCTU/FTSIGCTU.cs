@@ -20,19 +20,31 @@ namespace FTSIGCTU;
 
 public class MainClass : QuintessentialMod
 {
+
+
 	public static bool disableOverlapDetection = false;
 	
 	public override Type SettingsType => typeof(MySettings);
 	public class MySettings
 	{
+		//common
 		[SettingsLabel("Use thicker lines when highlighting hexes.")]
 		public bool drawThickHexes = false;
+		//TrackEditor
 		[SettingsLabel("When reversing a track, also reverse arms on the track.")]
 		public bool alsoReverseArms = true;
 		[SettingsLabel("Allow the creation of disjoint (i.e. 'quantum') tracks.")]
 		public bool allowQuantumTracking = false;
+		//ConduitEditor
 		[SettingsLabel("Allow conduits to be created, destroyed, and swapped around.")]
 		public bool allowConduitEditor = false;
+		//InstructionEditor
+		[SettingsLabel("Show blank instruction sources in the programming tray.")]
+		public bool drawBlanksOnProgrammingTray = false;
+		[SettingsLabel("Allow multiple Period Override instructions.")]
+		public bool allowMultipleOverrides = false;
+
+		//need to put this somewhere
 		[SettingsLabel("Disable overlap detection.")]
 		public bool disableOverlapDetection = false;
 	}
@@ -44,6 +56,7 @@ public class MainClass : QuintessentialMod
 		common.ApplySettings(SET.drawThickHexes);
 		TrackEditor.ApplySettings(SET.alsoReverseArms, SET.allowQuantumTracking);
 		ConduitEditor.ApplySettings(SET.allowConduitEditor);
+		InstructionEditor.ApplySettings(SET.drawBlanksOnProgrammingTray, SET.allowMultipleOverrides);
 
 		disableOverlapDetection = SET.disableOverlapDetection;
 	}
@@ -55,9 +68,16 @@ public class MainClass : QuintessentialMod
 	{
 		TrackEditor.LoadPuzzleContent();
 		ConduitEditor.LoadPuzzleContent();
+		InstructionEditor.LoadPuzzleContent();
 		MirrorTool.LoadPuzzleContent();
 	}
-	public override void Unload() { }
+
+	public override void Unload()
+	{
+		InstructionEditor.Unload();
+	}
+
+	//------------------------- END HOOKING -------------------------//
 	public override void PostLoad()
 	{
 		On.SolutionEditorScreen.method_50 += SES_Method_50;
@@ -79,6 +99,8 @@ public class MainClass : QuintessentialMod
 		orig(c153_self, param_3616);
 		TrackEditor.class153_method_221(c153_self);
 	}
+
+
 	public HashSet<HexIndex> Solution_method_1947(On.Solution.orig_method_1947 orig, Solution solution_self, Maybe<Part> param_5487, enum_137 param_5488)
 	{
 		if (disableOverlapDetection)
