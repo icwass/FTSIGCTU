@@ -30,6 +30,7 @@ public class MainClass : QuintessentialMod
 		//common
 		[SettingsLabel("Use thicker lines when highlighting hexes.")]
 		public bool drawThickHexes = false;
+
 		//TrackEditor
 		[SettingsLabel("When reversing a track, also reverse arms on the track.")]
 		public bool alsoReverseArms = true;
@@ -43,12 +44,12 @@ public class MainClass : QuintessentialMod
 		public bool drawBlanksOnProgrammingTray = false;
 		[SettingsLabel("Allow multiple Period Override instructions.")]
 		public bool allowMultipleOverrides = false;
-		[SettingsLabel("Allow duplicate Disposals, Berlos, inputs and outputs.")]
-		public bool allowDuplicateParts = false;
 
 		//need to put this somewhere
 		[SettingsLabel("Disable overlap detection.")]
 		public bool disableOverlapDetection = false;
+		[SettingsLabel("Allow duplicate Disposals, Berlos, inputs and outputs.")]
+		public bool allowDuplicateParts = false;
 	}
 	public override void ApplySettings()
 	{
@@ -74,6 +75,7 @@ public class MainClass : QuintessentialMod
 		InstructionEditor.LoadPuzzleContent();
 		MirrorTool.LoadPuzzleContent();
 		Miscellaneous.LoadPuzzleContent();
+		AreaDisplay.LoadPuzzleContent();
 	}
 
 	public override void Unload()
@@ -103,6 +105,7 @@ public class MainClass : QuintessentialMod
 	{
 		orig(c153_self, param_3616);
 		TrackEditor.class153_method_221(c153_self);
+		AreaDisplay.c153_method_221(c153_self);
 	}
 
 
