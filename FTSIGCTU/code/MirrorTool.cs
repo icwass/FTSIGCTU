@@ -13,42 +13,10 @@ using PartType = class_139;
 public static class MirrorTool
 {
 	//data structs, enums, variables
-	private static Sound[] sounds;
 	private static SDL.enum_160 mirrorVerticalKey = SDL.enum_160.SDLK_q;
 	private static SDL.enum_160 mirrorHorizontalKey = SDL.enum_160.SDLK_e;
 
-	private static Dictionary<PartType, mirrorRule> mirrorRules;
-
-	private enum resource : byte
-	{
-		success,
-		failure,
-		COUNT,
-	}
-
-	public class mirrorRule
-	{
-		public Action<Part, int> rule;
-		public Func<Part, bool> validator;
-		public mirrorRule(Action<Part, int> rule, Func<Part, bool> validator)
-		{
-			this.rule = rule;
-			this.validator = validator;
-		}
-		public mirrorRule(Action<Part, int> rule)
-		{
-			this.rule = rule;
-			this.validator = x => true;
-		}
-		public mirrorRule()
-		{
-			this.rule = (part, y) => {
-				mirrorOrigin(part, y);
-			};
-			this.validator = x => true;
-		}
-
-	}
+	private static Dictionary<PartType, Func<Part, bool, HexIndex, bool>> mirrorRules;
 
 	//---------------------------------------------------//
 	//public APIs and resources
@@ -57,9 +25,9 @@ public static class MirrorTool
 	/// Adds a mirroring rule to FTSIGCTU's rulebook for the given PartType, if one doesn't already exist.
 	/// </summary>
 	/// <param name="partType">The PartType that the mirror rule applies to.</param>
-	/// <param name="rule">The mirror rule to use for the given PartType.</param>
+	/// <param name="rule">A function representing the mirror rule to apply for the given PartType. See mirrorSimplePart for information on the function inputs. The bool output should indicate if the part can be mirrored.</param>
 	/// <returns></returns>
-	public static void addRule(PartType partType, mirrorRule rule)
+	public static void addRule(PartType partType, Func<Part, bool, HexIndex, bool> rule)
 	{
 		if (mirrorRules.Keys.Contains(partType))
 		{
@@ -71,9 +39,36 @@ public static class MirrorTool
 		}
 	}
 
+	#region MirroringHelpers
 	/// <summary>
-	/// Returns the input hex after mirroring it across the given horizontal axis.
+	/// Returns the hex obtained by mirroring the input hex across the specified axis.
+	/// <param name="inputHex">The hex to mirror.</param>
+	/// <param name="mirrorVert">Set to true to mirror vertically, set to false to mirror horizontally.</param>
+	/// <param name="pivotHex">A hex that defines the mirror axis.</param>
 	/// </summary>
+	public static HexIndex mirrorHex(HexIndex inputHex, bool mirrorVert, HexIndex pivotHex)
+	{
+		int q, r, s, t, x, y;
+		q = inputHex.Q;
+		r = inputHex.R;
+		s = pivotHex.Q;
+		t = pivotHex.R;
+
+		int j = q - s;
+		int k = r - t;
+		if (mirrorVert)
+		{
+			x = q + k;
+			y = t - k;
+		}
+		else // mirror horizontally
+		{
+			x = s - j - k;
+			y = r;
+		}
+		return new HexIndex(x, y);
+	}
+
 	public static HexIndex mirrorHexAcrossRow(HexIndex hex, int y)
 	{
 		int k = hex.R - y;
@@ -83,7 +78,7 @@ public static class MirrorTool
 	/// <summary>
 	/// An action that mirrors the part's origin hex.
 	/// </summary>
-	public static void mirrorOrigin(Part part, int y) => new DynamicData(part).Set("field_2692", mirrorHexAcrossRow(common.getPartOrigin(part), y));
+	public static void mirrorOrigin(Part part, bool mirrorVert, HexIndex pivotHex) => new DynamicData(part).Set("field_2692", mirrorHex(common.getPartOrigin(part), mirrorVert, pivotHex));
 
 	/// <summary>
 	/// An action that shifts the part's origin hex.
@@ -93,7 +88,7 @@ public static class MirrorTool
 	/// <summary>
 	/// An action that mirrors the part's rotation.
 	/// </summary>
-	public static void mirrorRotation(Part part) => new DynamicData(part).Set("field_2693", part.method_1163().Negative());
+	public static void mirrorRotation(Part part, bool mirrorVert) => new DynamicData(part).Set("field_2693", (part.method_1163() + (mirrorVert ? HexRotation.R0 : HexRotation.R180)).Negative());
 
 	/// <summary>
 	/// An action that applies a rotation to the part.
@@ -103,123 +98,141 @@ public static class MirrorTool
 	/// <summary>
 	/// An action that mirrors the Rotate and Pivot instructions of the part's instruction tape.
 	/// </summary>
-	public static void mirrorInstructions(Part part, int y)
+	public static void mirrorInstructions(Part part)
 	{
 		var tapeDyn = new DynamicData(part.field_2697);
 		var sortedDict = tapeDyn.Get<SortedDictionary<int, InstructionType>>("field_2415");
 		var newDict = new SortedDictionary<int, InstructionType>();
-		InstructionType InstructionRCW = class_169.field_1657;
-		InstructionType InstructionRCCW = class_169.field_1658;
-		InstructionType InstructionPCW = class_169.field_1661;
-		InstructionType InstructionPCCW = class_169.field_1662;
+
+		InstructionType RCW = class_169.field_1657;
+		InstructionType RCCW = class_169.field_1658;
+		InstructionType PCW = class_169.field_1661;
+		InstructionType PCCW = class_169.field_1662;
+		var mirrorInstr = new Dictionary<InstructionType, InstructionType>
+		{
+			{RCW,	RCCW},
+			{RCCW,	RCW},
+			{PCW,	PCCW},
+			{PCCW,	PCW},
+		};
 		foreach (var kvp in sortedDict)
 		{
 			var instruction = kvp.Value;
-			if (instruction == InstructionRCW)
+			if (mirrorInstr.ContainsKey(instruction))
 			{
-				instruction = InstructionRCCW;
-			}
-			else if (instruction == InstructionRCCW)
-			{
-				instruction = InstructionRCW;
-			}
-			else if (instruction == InstructionPCW)
-			{
-				instruction = InstructionPCCW;
-			}
-			else if (instruction == InstructionPCCW)
-			{
-				instruction = InstructionPCW;
+				instruction = mirrorInstr[instruction];
 			}
 			newDict.Add(kvp.Key, instruction);
 		}
 		tapeDyn.Set("field_2415", newDict);
 	}
+	#endregion
 
+
+	#region VanillaMirroringRules
 	/// <summary>
-	/// A simple mirror rule that mirrors the origin hex and the rotation.
+	/// A simple rule that mirrors the origin hex and the rotation.
+	/// Works for any part that is symmetric across the horizontal line that passes through its origin hex.
 	/// </summary>
-	public static mirrorRule mirrorRuleSimple = new mirrorRule(
-		(part, y) =>
-		{
-			mirrorOrigin(part, y);
-			mirrorRotation(part);
-		}
-	);
+	/// <param name="part">The part to be modified into its mirrored version.</param>
+	/// <param name="mirrorVert">True if the part should be mirrored vertically, false if horizontally.</param>
+	/// <param name="pivot">The hex to mirror across, i.e. the hex that the line of symmetry passes through.</param>
+	public static bool mirrorSimplePart(Part part, bool mirrorVert, HexIndex pivot)
+	{
+		mirrorOrigin(part, mirrorVert, pivot);
+		mirrorRotation(part, mirrorVert);
+		return true;
+	}
 
 	/// <summary>
-	/// Like mirrorRuleSimple, but the mirrored part gets an extra 180-degree rotation (needed for e.g. Glyph of Dispersion).
+	/// An always-returns-false mirror rule, for parts that cannot be mirrored.
 	/// </summary>
-	public static mirrorRule mirrorRuleSimple180 = new mirrorRule(
-		(part, y) =>
-		{
-			mirrorOrigin(part, y);
-			mirrorRotation(part);
-			shiftRotation(part, HexRotation.R180);
-		}
-	);
+	public static bool mirrorInvalid(Part part, bool mirrorVert, HexIndex pivot)
+	{
+		return false;
+	}
 
 	/// <summary>
-	/// Creates a mirror rule for parts with vertical symmetry across the specified line (e.g. x = 0.5 for Glyph of Purification).
+	/// A simple rule that only mirrors the origin hex.
+	/// Used for glyphs that can be mirrored but should not be rotated, like single-hex glyphs (e.g. Equilibrium) or the Glyph of Disposal.
+	/// </summary>
+	public static bool mirrorSingleton(Part part, bool mirrorVert, HexIndex pivot)
+	{
+		mirrorOrigin(part, mirrorVert, pivot);
+		return true;
+	}
+
+	/// <summary>
+	/// Creates a mirror rule for parts with symmetry across the specified vertical line (e.g. x = 0.5 for Glyph of Purification).
+	/// (Here x = 0 is the vertical line the goes through the origin hex.)
 	/// </summary>
 	/// <param name="x">The vertical line of symmetry, which should be an multiple of 0.5.</param>
-	public static mirrorRule mirrorRuleVerticalSymmetry(float x) => new mirrorRule(
-		(part, y) =>
-		{
-			mirrorOrigin(part, y);
-			mirrorRotation(part);
-			var shift = new HexIndex((int) (2 * x), 0).Rotated(common.getPartRotation(part));
-			shiftRotation(part, HexRotation.R180);
-			shiftOrigin(part, shift);
-		}
-	);
-	public static mirrorRule mirrorRuleVerticalSymmetry0_5 = mirrorRuleVerticalSymmetry(0.5f);
+	public static Func<Part, bool, HexIndex, bool> mirrorVerticalPart(float x) =>
+	(part, mirrorVert, pivot) =>
+	{
+		mirrorSimplePart(part, mirrorVert, pivot);
+		var shift = new HexIndex((int)(2 * x), 0).Rotated(common.getPartRotation(part));
+		shiftOrigin(part, shift);
+		shiftRotation(part, HexRotation.R180);
+		return true;
+	};
+	public static bool mirrorVerticalPart0_5(Part part, bool mirrorVert, HexIndex pivot) => mirrorVerticalPart(0.5f)(part, mirrorVert, pivot);
+	public static bool mirrorVerticalPart0_0(Part part, bool mirrorVert, HexIndex pivot) // optimized
+	{
+		mirrorSimplePart(part, mirrorVert, pivot);
+		shiftRotation(part, HexRotation.R180);
+		return true;
+	}
 
 	/// <summary>
-	/// The mirror rule for arms.
+	/// Creates a mirror rule for parts with symmetry across the specified horizontal line (e.g. y = 0 for Glyph of Projection).
+	/// (Here y = 0 is the horizontal line the goes through the origin hex.)
 	/// </summary>
-	public static mirrorRule mirrorRuleArm = new mirrorRule(
-		(part, y) =>
-		{
-			mirrorOrigin(part, y);
-			mirrorRotation(part);
-			mirrorInstructions(part, y);
-		}
-	);
+	/// <param name="y">The horizontal line of symmetry.</param>
+	public static Func<Part, bool, HexIndex, bool> mirrorHorizontalPart(int y) =>
+	(part, mirrorVert, pivot) =>
+	{
+		mirrorSimplePart(part, mirrorVert, pivot);
+		var shift = new HexIndex(y, -2*y).Rotated(common.getPartRotation(part));
+		shiftOrigin(part, shift);
+		return true;
+	};
+	public static bool mirrorHorizontalPart0_0(Part part, bool mirrorVert, HexIndex pivot) => mirrorSimplePart(part, mirrorVert, pivot); // optimized
 
 	/// <summary>
-	/// The mirror rule for the Berlo arm. Like a normal arm, but with a different rotation rule.
+	/// A simple mirror rule for arms.
+	/// Works for any arm part that is symmetric across the horizontal line that passes through its origin hex.
 	/// </summary>
-	public static mirrorRule mirrorRuleBerlo = new mirrorRule(
-		(part, y) =>
-		{
-			mirrorOrigin(part, y);
-			mirrorRotation(part);
-			shiftRotation(part, HexRotation.R180);
-			mirrorInstructions(part, y);
-		}
-	);
+	public static bool mirrorVanillaArm(Part part, bool mirrorVert, HexIndex pivot)
+	{
+		mirrorSimplePart(part, mirrorVert, pivot);
+		mirrorInstructions(part);
+		return true;
+	}
 
-	/// <summary>
-	/// The mirror rule for track.
-	/// </summary>
-	public static mirrorRule mirrorRuleTrack = new mirrorRule(
-		(part, y) =>
+	public static bool mirrorVanBerlo(Part part, bool mirrorVert, HexIndex pivot)
+	{
+		mirrorVanillaArm(part, mirrorVert, pivot);
+		shiftRotation(part, HexRotation.R180);
+		return true;
+	}
+
+	public static bool mirrorTrack(Part part, bool mirrorVert, HexIndex pivot)
+	{
+		var track = common.getTrackList(part);
+		for (int i = 0; i < track.Count; i++)
 		{
-			var track = common.getTrackList(part);
-			for (int i = 0; i < track.Count; i++)
-			{
-				track[i] = mirrorHexAcrossRow(track[i], y);
-			}
-			var partDyn = new DynamicData(part);
-			partDyn.Set("field_2692", track[0]);
-			common.setTrackList(part, track);
+			track[i] = mirrorHex(track[i], mirrorVert, pivot);
 		}
-	);
+		new DynamicData(part).Set("field_2692", track[0]);
+		common.setTrackList(part, track);
+		return true;
+	}
+	#endregion
+
 
 	//---------------------------------------------------//
 	//internal helper methods
-	//private static bool PartIsTrack(Part part) => part.method_1159() == class_191.field_1770;
 	private static PartType getDraggedPartType(PartDraggingInputMode.DraggedPart draggedPart) => common.getPartType(draggedPart.field_2722);
 
 	//---------------------------------------------------//
@@ -234,92 +247,81 @@ public static class MirrorTool
 		bool mirrorHorz = Input.IsSdlKeyPressed(mirrorHorizontalKey);
 		bool mirrorVert = Input.IsSdlKeyPressed(mirrorVerticalKey);
 
-		if (inDraggingMode && (mirrorHorz || mirrorVert))
-		{
-			var interfaceDyn = new DynamicData(current_interface);
-			var draggedParts = interfaceDyn.Get<List<PartDraggingInputMode.DraggedPart>>("field_2712");
-			var cursorHex = interfaceDyn.Get<HexIndex>("field_2715");
+		// exit early if wrong mode
+		if (!inDraggingMode) return;
+		// exit early if not trying to mirror
+		if (!mirrorHorz && !mirrorVert) return;
 
-			bool horizontalVersusInfinite = mirrorHorz && draggedParts.Any(x => getDraggedPartType(x) == common.IOOutputInfinite());
-			bool somePartCannotBeMirrored = draggedParts.Any(x => !mirrorRules.Keys.Contains(getDraggedPartType(x)) || !mirrorRules[getDraggedPartType(x)].validator(x.field_2722));
-			if (horizontalVersusInfinite || somePartCannotBeMirrored)
+		// time to mirror the selection!
+		var interfaceDyn = new DynamicData(current_interface);
+		var draggedParts = interfaceDyn.Get<List<PartDraggingInputMode.DraggedPart>>("field_2712");
+		var cursorHex = interfaceDyn.Get<HexIndex>("field_2715");
+
+		var mirroredDraggedParts = new List<PartDraggingInputMode.DraggedPart>();
+
+		foreach (var draggedPart in draggedParts)
+		{
+			PartType draggedPartType = getDraggedPartType(draggedPart);
+			var part = draggedPart.field_2722;
+			var clonedPart = common.clonePart(part);
+			var partType = getDraggedPartType(draggedPart);
+
+			if (!mirrorRules.Keys.Contains(partType) || !mirrorRules[partType](clonedPart, mirrorVert, cursorHex)) // can we mirror the part?
 			{
-				common.playSound(sounds[(int)resource.failure], 0.2f);
+				//could not mirror the part, so the whole operation fails and we must return early
+				common.playSound(class_238.field_1991.field_1872, 0.2f);  // 'sounds/ui_modal'
 				return;
 			}
-			//otherwise the selection can be mirrored
-			var mirroredDraggedParts = new List<PartDraggingInputMode.DraggedPart>();
-			foreach (var draggedPart in draggedParts)
+			//else the part was mirrored, so continue
+			var mirrorDraggedPart = new PartDraggingInputMode.DraggedPart()
 			{
-				PartType draggedPartType = getDraggedPartType(draggedPart);
-				var part = draggedPart.field_2722;
-				var clonedPart = common.clonePart(part);
-				mirrorRules[draggedPartType].rule(clonedPart, cursorHex.R);
-				if (mirrorHorz)
-				{
-					//internal loop of method_1215
-					clonedPart.method_1195(clonedPart.method_1161().RotatedAround(cursorHex, HexRotation.R180));
-					clonedPart.method_1197(SES_self.method_502(), HexRotation.R180);
-				}
-				var mirrorDraggedPart = new PartDraggingInputMode.DraggedPart()
-				{
-					field_2722 = clonedPart,
-					field_2723 = draggedPart.field_2723,
-					field_2207 = draggedPart.field_2207,
-				};
-				mirroredDraggedParts.Add(mirrorDraggedPart);
-			}
-
-			interfaceDyn.Set("field_2712", mirroredDraggedParts);
-			common.playSound(sounds[(int)resource.success], 0.2f);
+				field_2722 = clonedPart,
+				field_2723 = draggedPart.field_2723,
+				field_2207 = draggedPart.field_2207,
+			};
+			mirroredDraggedParts.Add(mirrorDraggedPart);
 		}
+		interfaceDyn.Set("field_2712", mirroredDraggedParts);
+		common.playSound(class_238.field_1991.field_1877, 0.2f);  // 'sounds/ui_transition_back'
 	}
+
 	public static void LoadPuzzleContent()
 	{
-		//load textures and sounds
-		sounds = new Sound[(int)resource.COUNT];
-
-		sounds[(int)resource.failure] = class_238.field_1991.field_1872;  // 'sounds/ui_modal'
-		sounds[(int)resource.success] = class_238.field_1991.field_1877;  // 'sounds/ui_transition_back'
-
-		//load mirror rules
 		mirrorRules = new();
-
-		//parts that have no rotation
-		addRule(common.GlyphEquilibrium(), new mirrorRule());
-		addRule(common.GlyphCalcification(), new mirrorRule());
-		addRule(common.GlyphDisposal(), new mirrorRule());
+		//add vanilla mirror rules
 
 		//mechanisms
-		//(no rule needed for common.MechanismGripper())
-		addRule(common.MechanismArm1(), mirrorRuleArm);
-		addRule(common.MechanismArm2(), mirrorRuleArm);
-		addRule(common.MechanismArm3(), mirrorRuleArm);
-		addRule(common.MechanismArm4(), mirrorRuleArm);
-		addRule(common.MechanismPiston(), mirrorRuleArm);
-		addRule(common.MechanismBerlo(), mirrorRuleBerlo);
-		addRule(common.MechanismTrack(), mirrorRuleTrack);
+		addRule(common.MechanismArm1(), mirrorVanillaArm);
+		addRule(common.MechanismArm2(), mirrorVanillaArm);
+		addRule(common.MechanismArm3(), mirrorVanillaArm);
+		addRule(common.MechanismArm6(), mirrorVanillaArm);
+		addRule(common.MechanismPiston(), mirrorVanillaArm);
+		addRule(common.MechanismBerlo(), mirrorVanBerlo);
+		addRule(common.MechanismTrack(), mirrorTrack);
 
 		//simple glyphs
-		addRule(common.GlyphBonder(), mirrorRuleSimple);
-		addRule(common.GlyphUnbonder(), mirrorRuleSimple);
-		addRule(common.GlyphMultiBonder(), mirrorRuleSimple);
-		addRule(common.GlyphDuplication(), mirrorRuleSimple);
-		addRule(common.GlyphProjection(), mirrorRuleSimple);
+		addRule(common.GlyphEquilibrium(), mirrorSingleton);
+		addRule(common.GlyphCalcification(), mirrorSingleton);
+		addRule(common.GlyphDisposal(), mirrorSingleton);
 
-		addRule(common.GlyphTriplexBonder(), mirrorRuleVerticalSymmetry0_5);
-		addRule(common.GlyphPurification(), mirrorRuleVerticalSymmetry0_5);
-		addRule(common.GlyphAnimismus(), mirrorRuleVerticalSymmetry0_5);
-		addRule(common.GlyphUnification(), mirrorRuleSimple);
-		addRule(common.GlyphDispersion(), mirrorRuleSimple180);
+		addRule(common.GlyphBonder(), mirrorSimplePart);
+		addRule(common.GlyphUnbonder(), mirrorSimplePart);
+		addRule(common.GlyphMultiBonder(), mirrorSimplePart);
+		addRule(common.GlyphDuplication(), mirrorSimplePart);
+		addRule(common.GlyphProjection(), mirrorSimplePart);
+		
+		//advanced glyphs
+		addRule(common.GlyphTriplexBonder(), mirrorVerticalPart0_5);
+		addRule(common.GlyphPurification(), mirrorVerticalPart0_5);
+		addRule(common.GlyphAnimismus(), mirrorVerticalPart0_5);
+		addRule(common.GlyphUnification(), mirrorSimplePart);
+		addRule(common.GlyphDispersion(), mirrorVerticalPart0_0);
 
-		//parts that may or may not be mirror-able
-
-		//addRule(common.IOConduit(), new mirrorRule());
-
-		//addRule(common.IOInput(), new mirrorRule());
-		//addRule(common.IOOutputStandard(), new mirrorRule());
-		//addRule(common.IOOutputInfinite(), new mirrorRule());
+		//parts that may or may not be mirror-able ///////////////// TO-DO: actually implement these
+		addRule(common.IOConduit(), mirrorInvalid);
+		//addRule(common.IOInput(), mirrorInvalid);
+		//addRule(common.IOOutputStandard(), mirrorInvalid);
+		//addRule(common.IOOutputInfinite(), mirrorInvalid);
 	}
 	//---------------------------------------------------//
 }

@@ -12,7 +12,9 @@ namespace FTSIGCTU;
 public static class InstructionEditor
 {
 	private static IDetour hook_SolutionEditorProgramPanel_method_2064;
+	private static IDetour hook_EditableProgram_method_912;
 	private static bool drawBlanksOnProgrammingTray = false;
+	private static InstructionType repeatBlankInstruction;
 
 	//data structs, enums, variables
 
@@ -41,9 +43,23 @@ public static class InstructionEditor
 		class_169.field_1654.field_2546 = class_235.method_615("ftsigctu/textures/instructions/idle2");
 		class_169.field_1654.field_2550 = enum_149.PreBasicSymbols;
 
+		//the blank used inside repeat instructions
+		//copied from class_169.field_1654
+		repeatBlankInstruction = new InstructionType()
+		{
+			field_2542 = 'i',
+			field_2543 = class_134.method_254(string.Empty),
+			field_2544 = class_134.method_254(string.Empty),
+			field_2546 = class_238.field_1989.field_87.field_659,
+			field_2548 = (enum_144)0,
+			field_2552 = false
+		};
+
+
+
 		//augment keyboard mappings
-		var field = typeof(class_203).GetField("field_1883", BindingFlags.Static |BindingFlags.NonPublic);
-		var keymappings = (Dictionary <SDL.enum_160, SDL.enum_160[]> ) field.GetValue(null);
+		var field = typeof(class_203).GetField("field_1883", BindingFlags.Static | BindingFlags.NonPublic);
+		var keymappings = (Dictionary<SDL.enum_160, SDL.enum_160[]>)field.GetValue(null);
 
 		keymappings.Add(
 			SDL.enum_160.SDLK_n,
@@ -58,15 +74,20 @@ public static class InstructionEditor
 			}
 		);
 		field.SetValue(null, keymappings);
-		
+
 		//------------------------- HOOKING -------------------------//
 		hook_SolutionEditorProgramPanel_method_2064 = new Hook(
 			typeof(SolutionEditorProgramPanel).GetMethod("method_2064", BindingFlags.Instance | BindingFlags.NonPublic),
 			typeof(InstructionEditor).GetMethod("OnSolutionEditorProgramPanelMethod2064", BindingFlags.Static | BindingFlags.NonPublic)
 		);
+		hook_EditableProgram_method_912 = new Hook(
+			typeof(EditableProgram).GetMethod("method_912", BindingFlags.Static | BindingFlags.NonPublic),
+			typeof(InstructionEditor).GetMethod("OnEditableProgramMethod912", BindingFlags.Static | BindingFlags.NonPublic)
+		);
 	}
 
 	private delegate void orig_SolutionEditorProgramPanel_method_2064(SolutionEditorProgramPanel sepp_self, InstructionType param_4881, Vector2 param_5660, Maybe<InstructionType> param_5661);
+	private delegate void orig_EditableProgram_method_912(class_188 param_4563, int param_4564);
 	private static void OnSolutionEditorProgramPanelMethod2064(orig_SolutionEditorProgramPanel_method_2064 orig, SolutionEditorProgramPanel sepp_self, InstructionType param_4881, Vector2 param_5660, Maybe<InstructionType> param_5661)
 	{
 		orig(sepp_self, param_4881, param_5660, param_5661);
@@ -81,9 +102,20 @@ public static class InstructionEditor
 			orig(sepp_self, class_169.field_1654, new Vector2(268f + x, 199f + y), param_5661);
 		}
 	}
+	private static void OnEditableProgramMethod912(orig_EditableProgram_method_912 orig, class_188 param_4563, int param_4564)
+	{
+		var buffer = class_169.field_1654;
+		class_169.field_1654 = repeatBlankInstruction;
+		/////////////////////////////
+		orig(param_4563, param_4564);
+		/////////////////////////////
+		class_169.field_1654 = buffer;
+	}
+
 	public static void Unload()
 	{
 		hook_SolutionEditorProgramPanel_method_2064.Dispose();
+		hook_EditableProgram_method_912.Dispose();
 	}
 
 	//------------------------- END HOOKING -------------------------//

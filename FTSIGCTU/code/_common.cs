@@ -28,7 +28,7 @@ public static class common
 	public static PartType MechanismArm1() => class_191.field_1764;
 	public static PartType MechanismArm2() => class_191.field_1765;
 	public static PartType MechanismArm3() => class_191.field_1766;
-	public static PartType MechanismArm4() => class_191.field_1767;
+	public static PartType MechanismArm6() => class_191.field_1767;
 	public static PartType MechanismPiston() => class_191.field_1768;
 	public static PartType MechanismGripper() => class_191.field_1769;
 	public static PartType MechanismTrack() => class_191.field_1770;
