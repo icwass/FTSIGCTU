@@ -24,7 +24,94 @@ public static class InstructionEditor
 	//---------------------------------------------------//
 	//internal main methods
 
+	private static void shiftInstructions(Part part, bool shiftRightwards, bool shiftFar)
+	{
+		var tapeDyn = new DynamicData(part.field_2697);
+		var sortedDict = tapeDyn.Get<SortedDictionary<int, InstructionType>>("field_2415");
+		var newDict = new SortedDictionary<int, InstructionType>();
+
+		//return early if we want to shift left but can't
+		if (!shiftRightwards && sortedDict.Keys.Contains(0)) return;
+		if (!shiftRightwards && shiftFar && sortedDict.Keys.Contains(1)) return;
+		if (!shiftRightwards && shiftFar && sortedDict.Keys.Contains(2)) return;
+		if (!shiftRightwards && shiftFar && sortedDict.Keys.Contains(3)) return;
+
+		int shift = shiftRightwards ? 1 : -1;
+		int scale = shiftFar ? 4 : 1;
+		foreach (var kvp in sortedDict)
+		{
+			newDict.Add(kvp.Key + shift*scale, kvp.Value);
+		}
+		tapeDyn.Set("field_2415", newDict);
+	}
+	private static void squishInstructions(Part part)
+	{
+		var tapeDyn = new DynamicData(part.field_2697);
+		var sortedDict = tapeDyn.Get<SortedDictionary<int, InstructionType>>("field_2415");
+		var newDict = new SortedDictionary<int, InstructionType>();
+		int i = 0;
+		if (sortedDict.Count > 0) i = sortedDict.First().Key;
+		foreach (var kvp in sortedDict)
+		{
+			newDict.Add(i, kvp.Value);
+			i++;
+		}
+		tapeDyn.Set("field_2415", newDict);
+	}
+	private static void spreadInstructions(Part part)
+	{
+		var tapeDyn = new DynamicData(part.field_2697);
+		var sortedDict = tapeDyn.Get<SortedDictionary<int, InstructionType>>("field_2415");
+		var newDict = new SortedDictionary<int, InstructionType>();
+		int k = 0;
+		if (sortedDict.Count > 0) k = sortedDict.First().Key;
+		foreach (var kvp in sortedDict)
+		{
+			newDict.Add((kvp.Key-k)*2+k, kvp.Value);
+		}
+		tapeDyn.Set("field_2415", newDict);
+	}
+
+
 	//---------------------------------------------------//
+	public static void SolutionEditorScreen_method_50(SolutionEditorScreen SES_self)
+	{
+		var current_interface = SES_self.field_4010;
+		bool inInstructionRowMode = current_interface.GetType() == new class_249().GetType();
+		bool keyA = Input.IsSdlKeyPressed(SDL.enum_160.SDLK_a);
+		bool keyD = Input.IsSdlKeyPressed(SDL.enum_160.SDLK_d);
+		bool keyLBracket = Input.IsSdlKeyPressed(SDL.enum_160.SDLK_LEFTBRACKET);
+		bool keyRBracket = Input.IsSdlKeyPressed(SDL.enum_160.SDLK_RIGHTBRACKET);
+		bool keyShift = Input.IsShiftHeld();
+
+		// exit early if wrong mode
+		if (!inInstructionRowMode) return;
+
+		// time to do something!
+		var interfaceDyn = new DynamicData(current_interface);
+		var part = interfaceDyn.Get<Part>("field_2010");
+
+		if (keyA || keyD)
+		{
+			shiftInstructions(part, keyD, keyShift);
+		}
+		else if (keyLBracket)
+		{
+			squishInstructions(part);
+		}
+		else if (keyRBracket)
+		{
+			spreadInstructions(part);
+		}
+		else
+		{
+			//no inputs
+			return;
+		}
+
+		//interfaceDyn.Set("field_2010", part); // not needed?
+		common.playSound(class_238.field_1991.field_1852, 0.2f);  // 'sounds/instruction_place'
+	}
 
 	public static void LoadPuzzleContent()
 	{

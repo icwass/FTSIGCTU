@@ -97,6 +97,7 @@ public class MainClass : QuintessentialMod
 	{
 		ConduitEditor.SolutionEditorScreen_method_50(SES_self);
 		MirrorTool.SolutionEditorScreen_method_50(SES_self);
+		InstructionEditor.SolutionEditorScreen_method_50(SES_self);
 		Miscellaneous.SolutionEditorScreen_method_50(SES_self);
 		orig(SES_self, param_5703);
 		TrackEditor.SolutionEditorScreen_method_50(SES_self);

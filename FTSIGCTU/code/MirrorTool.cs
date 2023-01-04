@@ -243,7 +243,7 @@ public static class MirrorTool
 	public static void SolutionEditorScreen_method_50(SolutionEditorScreen SES_self)
 	{
 		var current_interface = SES_self.field_4010;
-		bool inDraggingMode = current_interface.GetType() == (new PartDraggingInputMode()).GetType();
+		bool inDraggingMode = current_interface.GetType() == new PartDraggingInputMode().GetType();
 		bool mirrorHorz = Input.IsSdlKeyPressed(mirrorHorizontalKey);
 		bool mirrorVert = Input.IsSdlKeyPressed(mirrorVerticalKey);
 
