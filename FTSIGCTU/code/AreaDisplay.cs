@@ -53,10 +53,77 @@ public static class AreaDisplay
 		}
 	}
 
+	private static int findIndexOfMin(int a, int b, int c)
+	{
+		//give preference to b, then to a
+		if (b <= a)
+		{
+			return b <= c ? 1 : 2;
+		}
+		else
+		{
+			return a <= c ? 0 : 2;
+		}
+	}
+
 	//---------------------------------------------------//
 	//internal main methods
 
 	private static void displayHeightAndWidth(SolutionEditorScreen ses, HashSet<HexIndex> hexes)
+	{
+		if (hexes.Count == 0) return;
+		if (!showHeight && !showWidth) return;
+
+		//compute heights and widths in the different directions
+		int[] minH = new int[3] { int.MaxValue, int.MaxValue, int.MaxValue };
+		int[] maxH = new int[3] { int.MinValue, int.MinValue, int.MinValue };
+		int[] minW = new int[3] { int.MaxValue, int.MaxValue, int.MaxValue };
+		int[] maxW = new int[3] { int.MinValue, int.MinValue, int.MinValue };
+
+		int uvCompute(HexIndex hex, int dir)
+		{
+			int x = hex.Q;
+			int y = hex.R;
+			switch (dir)
+			{
+				default:// 60 degree
+					return -x;
+				case 1: // 0 degree
+					return y;
+				case 2: // -60 degree
+					return y + x;
+				case 3: // 150 degree
+					return 2 * y + x;
+				case 4: // 90 degree
+					return y + 2 * x;
+				case 5: // 30 degree
+					return y - x;
+			}
+		}
+
+		foreach (var hex in hexes)
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				int u = uvCompute(hex, i);
+				int v = uvCompute(hex, i + 3);
+
+				minH[i] = Math.Min(minH[i], u);
+				maxH[i] = Math.Max(maxH[i], u);
+				minW[i] = Math.Min(minW[i], v);
+				maxW[i] = Math.Max(maxW[i], v);
+			}
+		}
+
+		//find height and width, along with the index
+		int indexH = findIndexOfMin(maxH[0] - minH[0], maxH[1] - minH[1], maxH[2] - minH[2]);
+		int indexW = findIndexOfMin(maxW[0] - minW[0], maxW[1] - minW[1], maxW[2] - minW[2]);
+		int valH = maxH[indexH] - minH[indexH];
+		int valW = maxW[indexW] - minW[indexW];
+
+	}
+
+	private static void OLDdisplayHeightAndWidth(SolutionEditorScreen ses, HashSet<HexIndex> hexes)
 	{
 		if (hexes.Count == 0) return;
 
@@ -78,14 +145,14 @@ public static class AreaDisplay
 				h[4] = Math.Min(h[4], hex.Q + hex.R);
 				h[5] = Math.Max(h[5], hex.Q + hex.R);
 
-				uv[0] = Math.Min(uv[0], 2*hex.Q + hex.R);
-				uv[1] = Math.Max(uv[1], 2*hex.Q + hex.R);
-				uv[2] = Math.Min(uv[2], hex.Q + 2*hex.R);
-				uv[3] = Math.Max(uv[3], hex.Q + 2*hex.R);
+				uv[0] = Math.Min(uv[0], 2 * hex.Q + hex.R);
+				uv[1] = Math.Max(uv[1], 2 * hex.Q + hex.R);
+				uv[2] = Math.Min(uv[2], hex.Q + 2 * hex.R);
+				uv[3] = Math.Max(uv[3], hex.Q + 2 * hex.R);
 				uv[4] = Math.Min(uv[4], hex.Q - hex.R);
 				uv[5] = Math.Max(uv[5], hex.Q - hex.R);
 			}
-			int valH = Math.Min(h[1]-h[0],Math.Min(h[3] - h[2], h[5] - h[4]));
+			int valH = Math.Min(h[1] - h[0], Math.Min(h[3] - h[2], h[5] - h[4]));
 
 			//then display the height borders
 			int x0, x1, x2, x3, y0, y1, y2, y3, w;
@@ -95,10 +162,10 @@ public static class AreaDisplay
 				y0 = h[0] - 1;
 				y1 = h[1] + 1;
 
-				x0 = (int) Math.Floor(0.5 * (uv[0] - y0));
-				x1 = (int) Math.Floor(0.5 * (uv[0] - y1));
-				x2 = (int) Math.Ceiling(0.5 * (uv[1] - y0));
-				x3 = (int) Math.Ceiling(0.5 * (uv[1] - y1));
+				x0 = (int)Math.Floor(0.5 * (uv[0] - y0));
+				x1 = (int)Math.Floor(0.5 * (uv[0] - y1));
+				x2 = (int)Math.Ceiling(0.5 * (uv[1] - y0));
+				x3 = (int)Math.Ceiling(0.5 * (uv[1] - y1));
 
 				w = Math.Max(x2 - x0, x3 - x1);
 
@@ -110,10 +177,10 @@ public static class AreaDisplay
 				x0 = h[2] - 1;
 				x1 = h[3] + 1;
 
-				y0 = (int) Math.Floor((uv[2] - x0) / 2.0);
-				y1 = (int) Math.Floor((uv[2] - x1) / 2.0);
-				y2 = (int) Math.Ceiling((uv[3] - x0) / 2.0);
-				y3 = (int) Math.Ceiling((uv[3] - x1) / 2.0);
+				y0 = (int)Math.Floor((uv[2] - x0) / 2.0);
+				y1 = (int)Math.Floor((uv[2] - x1) / 2.0);
+				y2 = (int)Math.Ceiling((uv[3] - x0) / 2.0);
+				y3 = (int)Math.Ceiling((uv[3] - x1) / 2.0);
 
 				w = Math.Max(y2 - y0, y3 - y1);
 
@@ -130,8 +197,8 @@ public static class AreaDisplay
 				x2 = (int)Math.Ceiling((z0 + uv[5]) / 2.0);
 				x3 = (int)Math.Ceiling((z1 + uv[5]) / 2.0);
 
-				y0 = z0-x0;
-				y1 = z1-x1;
+				y0 = z0 - x0;
+				y1 = z1 - x1;
 				//y2 = z0-x2;
 				//y3 = z1-x3;
 
@@ -208,7 +275,7 @@ public static class AreaDisplay
 		}
 		hexes.UnionWith(getFootprint(ses));
 
-		displayHeightAndWidth(ses, hexes);
+		OLDdisplayHeightAndWidth(ses, hexes);
 
 
 
