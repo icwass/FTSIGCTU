@@ -99,6 +99,19 @@ public static class common
 		new DynamicData(part).Set("field_2700", trackList);
 	}
 
+	public static List<HexIndex> getConduitList(Part part)
+	{
+		var conduitList = part.method_1173();
+		var origin = common.getPartOrigin(part);
+		var rot = common.getPartRotation(part);
+		var list = new List<HexIndex>();
+		foreach (HexIndex hex in conduitList)
+		{
+			list.Add(hex.Rotated(rot) + origin);
+		}
+		return list;
+	}
+
 	public static Part clonePart(Part orig)
 	{
 		//based off method_1175

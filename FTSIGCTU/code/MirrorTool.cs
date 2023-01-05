@@ -126,6 +126,87 @@ public static class MirrorTool
 		}
 		tapeDyn.Set("field_2415", newDict);
 	}
+
+	/// <summary>
+	/// Returns a dictionary of rotations and translations that transform the start footprint into the target footprint.
+	/// The dictionary will be empty if no valid transformation exists.
+	/// </summary>
+	/// <param name="pivot">The hex to rotate around. Rotations are applied before translations.</param>
+	public static Dictionary<HexRotation, HexIndex> getFootprintTransformations(List<HexIndex> startList, HexIndex pivot, List<HexIndex> targetList)
+	{
+		var ret = new Dictionary<HexRotation, HexIndex>();
+		HashSet<HexIndex> start = new();
+		HashSet<HexIndex> target = new();
+		foreach (var hex in startList)
+		{
+			start.Add(hex);
+		}
+		foreach (var hex in targetList)
+		{
+			target.Add(hex);
+		}
+		// if the footprints have different sizes, then no translation is possible, so return early
+		if (start.Count != target.Count) return ret;
+		// if the footprint is null, then all translations work, so return early
+		var count = target.Count;
+		if (count == 0)
+		{
+			for (int i = 0; i < 6; i++)
+			{
+				ret.Add(new HexRotation(i), new HexIndex(0, 0));
+			}
+			return ret;
+		}
+
+		//let the real work begin
+		var targetSum = new HexIndex(0, 0);
+		foreach (var hex in target)
+		{
+			targetSum += hex;
+		}
+
+		for (int i = 0; i < 6; i++)
+		{
+			var rotation = new HexRotation(i);
+			List<HexIndex> rotList = new();
+			foreach (var hex in start)
+			{
+				rotList.Add(hex.RotatedAround(pivot, rotation));
+			}
+
+			// the question at hand: can we translate rotList into targetList?
+			// if rotList can be translated into targetList,
+			// it'd be by some unique vector V
+			// but then we have [rotSum + count*V = targetSum]
+			// and we can solve for V
+			//     note: if rotList can NOT be translated into targetList,
+			// this equation might work for some V anyway,
+			// so we need to verify V once we find it
+			var rotSum = new HexIndex(0, 0);
+			foreach (var hex in rotList)
+			{
+				rotSum += hex;
+			}
+
+			var sum = targetSum - rotSum;
+			if (sum.Q % count != 0 || sum.R % count != 0) continue;
+			//else, we MIGHT have valid transformation!
+			//check the translation to see if it works
+			var translation = new HexIndex(sum.Q / count, sum.R / count);
+
+			if (rotList.Any(x => !target.Contains(x + translation)))
+			{
+				//the translation doesn't work
+				continue;
+			}
+			else
+			{
+				//the translation is valid!
+				ret.Add(rotation, translation);
+			}
+		}
+		return ret;
+	}
 	#endregion
 
 
@@ -228,6 +309,30 @@ public static class MirrorTool
 		common.setTrackList(part, track);
 		return true;
 	}
+
+	public static bool mirrorConduit(Part part, bool mirrorVert, HexIndex pivot)
+	{
+		//vanilla conduits have an edge between every pair of adjacent hexes
+		//so we need only check the hex footprint
+		//(at least, until conduits with special edge sets become prolific)
+		HexIndex origin = common.getPartOrigin(part);
+		HexRotation rot = common.getPartRotation(part);
+		var startFootprint = common.getConduitList(part);
+		List<HexIndex> targetFootprint = new();
+		foreach (var hex in startFootprint)
+		{
+			targetFootprint.Add(mirrorHex(hex, mirrorVert, pivot));
+		}
+
+		var transforms = getFootprintTransformations(startFootprint, origin, targetFootprint);
+		bool canMirror = transforms.Count > 0;
+		if (canMirror)
+		{
+			shiftRotation(part, transforms.First().Key);
+			shiftOrigin(part, transforms.First().Value);
+		}
+		return canMirror;
+	}
 	#endregion
 
 
@@ -318,7 +423,7 @@ public static class MirrorTool
 		addRule(common.GlyphDispersion(), mirrorVerticalPart0_0);
 
 		//parts that may or may not be mirror-able ///////////////// TO-DO: actually implement these
-		addRule(common.IOConduit(), mirrorInvalid);
+		addRule(common.IOConduit(), mirrorConduit);
 		//addRule(common.IOInput(), mirrorInvalid);
 		//addRule(common.IOOutputStandard(), mirrorInvalid);
 		//addRule(common.IOOutputInfinite(), mirrorInvalid);
