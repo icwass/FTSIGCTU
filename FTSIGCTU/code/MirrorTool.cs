@@ -333,6 +333,13 @@ public static class MirrorTool
 		}
 		return canMirror;
 	}
+
+	public static bool mirrorInput(Part part, bool mirrorVert, HexIndex pivot)
+	{
+		//we can check the hex footprint to start,
+		//but we also need to check atom types and edge types
+		return false;
+	}
 	#endregion
 
 

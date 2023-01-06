@@ -26,10 +26,16 @@ public static class AreaDisplay
 		blank,
 		heightUpper0,
 		heightLower0,
-		heightUpper1,
-		heightLower1,
-		heightUpper2,
-		heightLower2,
+		heightUpper60,
+		heightLower60,
+		heightUpper300,
+		heightLower300,
+		widthLefter0,
+		widthRighter0,
+		widthLefter60,
+		widthRighter60,
+		widthLefter300,
+		widthRighter300,
 		COUNT,
 	}
 
@@ -53,191 +59,138 @@ public static class AreaDisplay
 		}
 	}
 
-	private static int findIndexOfMin(int a, int b, int c)
+	private static int heightCoordinate(HexIndex hex, int direction)
 	{
-		//give preference to b, then to a
-		if (b <= a)
+		switch (direction)
 		{
-			return b <= c ? 1 : 2;
+			default:return -hex.Q;			// 60 degree
+			case 1: return hex.R;			// 0 degree
+			case 2: return hex.Q + hex.R;	// -60 degree
 		}
-		else
+	}
+	private static int widthCoordinate(HexIndex hex, int direction)
+	{
+		switch (direction)
 		{
-			return a <= c ? 0 : 2;
+			default:return 2 * hex.R + hex.Q;	// 150 degree
+			case 1: return 2 * hex.Q + hex.R;	// 90 degree
+			case 2: return hex.Q - hex.R;		// 30 degree
 		}
 	}
 
 	//---------------------------------------------------//
 	//internal main methods
-
-	private static void displayHeightAndWidth(SolutionEditorScreen ses, HashSet<HexIndex> hexes)
+	private static void displayHeightWidth(SolutionEditorScreen ses, HashSet<HexIndex> hexes)
 	{
 		if (hexes.Count == 0) return;
-		if (!showHeight && !showWidth) return;
-
 		//compute heights and widths in the different directions
-		int[] minH = new int[3] { int.MaxValue, int.MaxValue, int.MaxValue };
-		int[] maxH = new int[3] { int.MinValue, int.MinValue, int.MinValue };
-		int[] minW = new int[3] { int.MaxValue, int.MaxValue, int.MaxValue };
-		int[] maxW = new int[3] { int.MinValue, int.MinValue, int.MinValue };
+		int MAX = int.MaxValue;
+		int MIN = int.MinValue;
+		int[] minH = new int[3] { MAX, MAX, MAX };
+		int[] minW = new int[3] { MAX, MAX, MAX };
+		int[] maxH = new int[3] { MIN, MIN, MIN };
+		int[] maxW = new int[3] { MIN, MIN, MIN };
+		int valH = MAX;
+		int valW = MAX;
+		HexRotation[] directions = new HexRotation[3] { HexRotation.R0 , HexRotation.R60, HexRotation.R300 };
+		int dirH = 0;
+		int dirW = 0;
 
-		int uvCompute(HexIndex hex, int dir)
+		for (int dir = 0; dir < 3; dir++)
 		{
-			int x = hex.Q;
-			int y = hex.R;
-			switch (dir)
+			foreach (var hexIndex in hexes)
 			{
-				default:// 60 degree
-					return -x;
-				case 1: // 0 degree
-					return y;
-				case 2: // -60 degree
-					return y + x;
-				case 3: // 150 degree
-					return 2 * y + x;
-				case 4: // 90 degree
-					return y + 2 * x;
-				case 5: // 30 degree
-					return y - x;
+				// rotate hex into the normal workspace
+				// (we'll rotate back into realspace before drawing)
+				var hex = hexIndex.Rotated(directions[dir].Negative());
+				int h = hex.R;
+				int w = 2 * hex.Q + hex.R;
+				minH[dir] = Math.Min(minH[dir], h);
+				maxH[dir] = Math.Max(maxH[dir], h);
+				minW[dir] = Math.Min(minW[dir], w);
+				maxW[dir] = Math.Max(maxW[dir], w);
+			}
+			int H = maxH[dir] - minH[dir];
+			if (H < valH)
+			{
+				valH = H;
+				dirH = dir;
+			}
+			int W = maxW[dir] - minW[dir];
+			if (W < valW)
+			{
+				valW = W;
+				dirW = dir;
 			}
 		}
 
-		foreach (var hex in hexes)
-		{
-			for (int i = 0; i < 3; i++)
-			{
-				int u = uvCompute(hex, i);
-				int v = uvCompute(hex, i + 3);
-
-				minH[i] = Math.Min(minH[i], u);
-				maxH[i] = Math.Max(maxH[i], u);
-				minW[i] = Math.Min(minW[i], v);
-				maxW[i] = Math.Max(maxW[i], v);
-			}
-		}
-
-		//find height and width, along with the index
-		int indexH = findIndexOfMin(maxH[0] - minH[0], maxH[1] - minH[1], maxH[2] - minH[2]);
-		int indexW = findIndexOfMin(maxW[0] - minW[0], maxW[1] - minW[1], maxW[2] - minW[2]);
-		int valH = maxH[indexH] - minH[indexH];
-		int valW = maxW[indexW] - minW[indexW];
-
-	}
-
-	private static void OLDdisplayHeightAndWidth(SolutionEditorScreen ses, HashSet<HexIndex> hexes)
-	{
-		if (hexes.Count == 0) return;
-
-		//first, compute the height and width
 		if (showHeight)
 		{
-			int minH = int.MaxValue;
-			int maxH = int.MinValue;
+			int q0, q1, q2, q3, r0, r1, w;
+			r0 = minH[dirH] - 1;
+			r1 = maxH[dirH] + 1;
 
-			//compute min height
-			int[] h = new int[6] { minH, maxH, minH, maxH, minH, maxH };
-			int[] uv = new int[6] { minH, maxH, minH, maxH, minH, maxH };
-			foreach (var hex in hexes)
-			{
-				h[0] = Math.Min(h[0], hex.R);
-				h[1] = Math.Max(h[1], hex.R);
-				h[2] = Math.Min(h[2], hex.Q);
-				h[3] = Math.Max(h[3], hex.Q);
-				h[4] = Math.Min(h[4], hex.Q + hex.R);
-				h[5] = Math.Max(h[5], hex.Q + hex.R);
+			q0 = (int)Math.Floor(0.5 * (minW[dirH] - r0));
+			q1 = (int)Math.Floor(0.5 * (minW[dirH] - r1));
+			q2 = (int)Math.Ceiling(0.5 * (maxW[dirH] - r0));
+			q3 = (int)Math.Ceiling(0.5 * (maxW[dirH] - r1));
+			w = Math.Max(q2 - q0, q3 - q1);
 
-				uv[0] = Math.Min(uv[0], 2 * hex.Q + hex.R);
-				uv[1] = Math.Max(uv[1], 2 * hex.Q + hex.R);
-				uv[2] = Math.Min(uv[2], hex.Q + 2 * hex.R);
-				uv[3] = Math.Max(uv[3], hex.Q + 2 * hex.R);
-				uv[4] = Math.Min(uv[4], hex.Q - hex.R);
-				uv[5] = Math.Max(uv[5], hex.Q - hex.R);
-			}
-			int valH = Math.Min(h[1] - h[0], Math.Min(h[3] - h[2], h[5] - h[4]));
+			displayHeight(ses, new HexIndex(q0, r0), new HexIndex(q1, r1), w, directions[dirH]);
+		}
 
-			//then display the height borders
-			int x0, x1, x2, x3, y0, y1, y2, y3, w;
-			if (valH == h[1] - h[0])
-			{
-				//solution runs in the usual direction (y=k) direction
-				y0 = h[0] - 1;
-				y1 = h[1] + 1;
+		if (showWidth)
+		{
+			//
+			
+			int q0, q1, r0, r1, h;
+			bool leftInnie, rightOutie;
+			r0 = minH[dirW];
+			r1 = maxH[dirW];
+			h = r1 - r0 + 1;
 
-				x0 = (int)Math.Floor(0.5 * (uv[0] - y0));
-				x1 = (int)Math.Floor(0.5 * (uv[0] - y1));
-				x2 = (int)Math.Ceiling(0.5 * (uv[1] - y0));
-				x3 = (int)Math.Ceiling(0.5 * (uv[1] - y1));
+			q0 = minW[dirW] - r0;
+			q1 = maxW[dirW] - r0;
+			leftInnie = (q0 % 2 == 0);
+			rightOutie = (q1 % 2 != 0);
+			q0 = (int)Math.Floor(0.5 * (q0 - 1));
+			q1 = (int)Math.Ceiling(0.5 * (q1 + 1));
 
-				w = Math.Max(x2 - x0, x3 - x1);
-
-				displayHeight(ses, new HexIndex(x0, y0), new HexIndex(x1, y1), new HexIndex(1, 0), w);
-			}
-			else if (valH == h[3] - h[2])
-			{
-				//solutions runs up to the right, in the (x=k) direction
-				x0 = h[2] - 1;
-				x1 = h[3] + 1;
-
-				y0 = (int)Math.Floor((uv[2] - x0) / 2.0);
-				y1 = (int)Math.Floor((uv[2] - x1) / 2.0);
-				y2 = (int)Math.Ceiling((uv[3] - x0) / 2.0);
-				y3 = (int)Math.Ceiling((uv[3] - x1) / 2.0);
-
-				w = Math.Max(y2 - y0, y3 - y1);
-
-				displayHeight(ses, new HexIndex(x1, y1), new HexIndex(x0, y0), new HexIndex(0, 1), w);
-			}
-			else // (H == h[5] - h[4])
-			{
-				//solutions runs down to the right, in the (x+y=k) direction
-				int z0 = h[4] - 1;
-				int z1 = h[5] + 1;
-
-				x0 = (int)Math.Floor((z0 + uv[4]) / 2.0);
-				x1 = (int)Math.Floor((z1 + uv[4]) / 2.0);
-				x2 = (int)Math.Ceiling((z0 + uv[5]) / 2.0);
-				x3 = (int)Math.Ceiling((z1 + uv[5]) / 2.0);
-
-				y0 = z0 - x0;
-				y1 = z1 - x1;
-				//y2 = z0-x2;
-				//y3 = z1-x3;
-
-				w = Math.Max(x2 - x0, x3 - x1); // fun fact: x2 - x0 == y0 - y2 and x3 - x1 == y1 - y3
-
-				displayHeight(ses, new HexIndex(x0, y0), new HexIndex(x1, y1), new HexIndex(1, -1), w);
-			}
-
+			displayWidth(ses, new HexIndex(q0, r0), new HexIndex(q1, r0), h, leftInnie, rightOutie, directions[dirW]);
 		}
 	}
 
-	private static void displayHeight(SolutionEditorScreen ses, HexIndex lowerLeft, HexIndex upperLeft, HexIndex step, int width)
+	private static void displayHeight(SolutionEditorScreen ses, HexIndex lowerLeft, HexIndex upperLeft, int width, HexRotation direction)
 	{
-		Texture upperTex = textures[(int)resource.heightUpper2];
-		Texture lowerTex = textures[(int)resource.heightLower2];
+		//rotate from workspace to realspace
+		lowerLeft = lowerLeft.Rotated(direction);
+		upperLeft = upperLeft.Rotated(direction);
+		HexIndex step = new HexIndex(1, 0).Rotated(direction);
 
-		//choose texture
-		if (step == new HexIndex(1, 0))
+		//get textures
+		Texture upperTex = textures[(int)resource.heightUpper0];
+		Texture lowerTex = textures[(int)resource.heightLower0];
+		if (direction.GetNumberOfTurns() == HexRotation.R60.GetNumberOfTurns())
 		{
-			upperTex = textures[(int)resource.heightUpper0];
-			lowerTex = textures[(int)resource.heightLower0];
-		}
-		else if (step == new HexIndex(0, 1))
+			upperTex = textures[(int)resource.heightUpper60];
+			lowerTex = textures[(int)resource.heightLower60];
+		} else if (direction.GetNumberOfTurns() == HexRotation.R300.GetNumberOfTurns())
 		{
-			upperTex = textures[(int)resource.heightUpper1];
-			lowerTex = textures[(int)resource.heightLower1];
+			upperTex = textures[(int)resource.heightUpper300];
+			lowerTex = textures[(int)resource.heightLower300];
 		}
 
-		//prep for-loop
-		int c = 3;
+		//prep for loop
+		int c = 2;
 		for (int i = 0; i < c; i++)
 		{
 			upperLeft -= step;
 			lowerLeft -= step;
+			width += 2;
 		}
 		//draw hexes
-		for (int i = 0; i <= width + 2 * c; i++)
+		for (int i = 0; i <= width; i++)
 		{
-			//draw hexes
 			drawHex(ses, lowerLeft, lowerTex);
 			drawHex(ses, upperLeft, upperTex);
 
@@ -246,6 +199,51 @@ public static class AreaDisplay
 			lowerLeft += step;
 		}
 	}
+	private static void displayWidth(SolutionEditorScreen ses, HexIndex lowerLeft, HexIndex lowerRight, int height, bool leftStartsInnie, bool rightStartsOutie, HexRotation direction)
+	{
+		//rotate from workspace to realspace
+		lowerLeft = lowerLeft.Rotated(direction);
+		lowerRight = lowerRight.Rotated(direction);
+		bool leftState = leftStartsInnie;
+		bool rightState = rightStartsOutie;
+		HexIndex[] step = new HexIndex[2] { new HexIndex(0, 1).Rotated(direction), new HexIndex(-1, 1).Rotated(direction) };
+
+		//get textures
+		Texture lefterTex = textures[(int)resource.widthLefter0];
+		Texture righterTex = textures[(int)resource.widthRighter0];
+		if (direction.GetNumberOfTurns() == HexRotation.R60.GetNumberOfTurns())
+		{
+			lefterTex = textures[(int)resource.widthLefter60];
+			righterTex = textures[(int)resource.widthRighter60];
+		}
+		else if (direction.GetNumberOfTurns() == HexRotation.R300.GetNumberOfTurns())
+		{
+			lefterTex = textures[(int)resource.widthLefter300];
+			righterTex = textures[(int)resource.widthRighter300];
+		}
+
+		//prep for loop
+		int c = 1;
+		for (int i = 0; i < c; i++)
+		{
+			lowerLeft -= step[0] + step[1];
+			lowerRight -= step[0] + step[1];
+			height += 4;
+		}
+		//draw hexes
+		for (int i = 0; i < height; i++)
+		{
+			drawHex(ses, lowerLeft, leftState ? lefterTex : righterTex);
+			drawHex(ses, lowerRight, rightState ? lefterTex : righterTex);
+
+			//update state
+			lowerLeft += step[leftState ? 0 : 1];
+			lowerRight += step[rightState ? 0 : 1];
+			leftState = !leftState;
+			rightState = !rightState;
+		}
+	}
+
 
 	//---------------------------------------------------//
 
@@ -275,9 +273,7 @@ public static class AreaDisplay
 		}
 		hexes.UnionWith(getFootprint(ses));
 
-		OLDdisplayHeightAndWidth(ses, hexes);
-
-
+		if (showHeight || showWidth) displayHeightWidth(ses, hexes);
 
 
 
@@ -297,10 +293,16 @@ public static class AreaDisplay
 		textures[(int)resource.blank] = class_235.method_615(path + "blank");
 		textures[(int)resource.heightLower0] = class_235.method_615(path + "height_lower0");
 		textures[(int)resource.heightUpper0] = class_235.method_615(path + "height_upper0");
-		textures[(int)resource.heightLower1] = class_235.method_615(path + "height_lower1");
-		textures[(int)resource.heightUpper1] = class_235.method_615(path + "height_upper1");
-		textures[(int)resource.heightLower2] = class_235.method_615(path + "height_lower2");
-		textures[(int)resource.heightUpper2] = class_235.method_615(path + "height_upper2");
+		textures[(int)resource.heightLower60] = class_235.method_615(path + "height_lower60");
+		textures[(int)resource.heightUpper60] = class_235.method_615(path + "height_upper60");
+		textures[(int)resource.heightLower300] = class_235.method_615(path + "height_lower300");
+		textures[(int)resource.heightUpper300] = class_235.method_615(path + "height_upper300");
+		textures[(int)resource.widthLefter0] = class_235.method_615(path + "width_lefter0");
+		textures[(int)resource.widthRighter0] = class_235.method_615(path + "width_righter0");
+		textures[(int)resource.widthLefter60] = class_235.method_615(path + "width_lefter60");
+		textures[(int)resource.widthRighter60] = class_235.method_615(path + "width_righter60");
+		textures[(int)resource.widthLefter300] = class_235.method_615(path + "width_lefter300");
+		textures[(int)resource.widthRighter300] = class_235.method_615(path + "width_righter300");
 	}
 
 	//---------------------------------------------------//
