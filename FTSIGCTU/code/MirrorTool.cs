@@ -16,7 +16,19 @@ public static class MirrorTool
 	private static SDL.enum_160 mirrorVerticalKey = SDL.enum_160.SDLK_q;
 	private static SDL.enum_160 mirrorHorizontalKey = SDL.enum_160.SDLK_e;
 
-	private static Dictionary<PartType, Func<Part, bool, HexIndex, bool>> mirrorRules;
+	private static Dictionary<PartType, Func<SolutionEditorScreen, Part, bool, HexIndex, bool>> mirrorRules;
+
+	private static bool bondsMatch(class_277 a, class_277 b)
+	{
+		//check bond type
+		if (a.field_2186 != b.field_2186) return false;
+
+		//check bond hexes
+		if (a.field_2187 == b.field_2187 && a.field_2188 == b.field_2188) return true;
+		if (a.field_2187 == b.field_2188 && a.field_2188 == b.field_2187) return true;
+
+		return false;
+	}
 
 	//---------------------------------------------------//
 	//public APIs and resources
@@ -27,7 +39,7 @@ public static class MirrorTool
 	/// <param name="partType">The PartType that the mirror rule applies to.</param>
 	/// <param name="rule">A function representing the mirror rule to apply for the given PartType. See mirrorSimplePart for information on the function inputs. The bool output should indicate if the part can be mirrored.</param>
 	/// <returns></returns>
-	public static void addRule(PartType partType, Func<Part, bool, HexIndex, bool> rule)
+	public static void addRule(PartType partType, Func<SolutionEditorScreen, Part, bool, HexIndex, bool> rule)
 	{
 		if (mirrorRules.Keys.Contains(partType))
 		{
@@ -215,10 +227,11 @@ public static class MirrorTool
 	/// A simple rule that mirrors the origin hex and the rotation.
 	/// Works for any part that is symmetric across the horizontal line that passes through its origin hex.
 	/// </summary>
+	/// <param name="ses">The current SolutionEditorScreen. Some parts, such as inputs, need to reference the SES to determine whether they can be mirrored.</param>
 	/// <param name="part">The part to be modified into its mirrored version.</param>
 	/// <param name="mirrorVert">True if the part should be mirrored vertically, false if horizontally.</param>
 	/// <param name="pivot">The hex to mirror across, i.e. the hex that the line of symmetry passes through.</param>
-	public static bool mirrorSimplePart(Part part, bool mirrorVert, HexIndex pivot)
+	public static bool mirrorSimplePart(SolutionEditorScreen ses, Part part, bool mirrorVert, HexIndex pivot)
 	{
 		mirrorOrigin(part, mirrorVert, pivot);
 		mirrorRotation(part, mirrorVert);
@@ -228,7 +241,7 @@ public static class MirrorTool
 	/// <summary>
 	/// An always-returns-false mirror rule, for parts that cannot be mirrored.
 	/// </summary>
-	public static bool mirrorInvalid(Part part, bool mirrorVert, HexIndex pivot)
+	public static bool mirrorInvalid(SolutionEditorScreen ses, Part part, bool mirrorVert, HexIndex pivot)
 	{
 		return false;
 	}
@@ -237,7 +250,7 @@ public static class MirrorTool
 	/// A simple rule that only mirrors the origin hex.
 	/// Used for glyphs that can be mirrored but should not be rotated, like single-hex glyphs (e.g. Equilibrium) or the Glyph of Disposal.
 	/// </summary>
-	public static bool mirrorSingleton(Part part, bool mirrorVert, HexIndex pivot)
+	public static bool mirrorSingleton(SolutionEditorScreen ses, Part part, bool mirrorVert, HexIndex pivot)
 	{
 		mirrorOrigin(part, mirrorVert, pivot);
 		return true;
@@ -248,19 +261,19 @@ public static class MirrorTool
 	/// (Here x = 0 is the vertical line the goes through the origin hex.)
 	/// </summary>
 	/// <param name="x">The vertical line of symmetry, which should be an multiple of 0.5.</param>
-	public static Func<Part, bool, HexIndex, bool> mirrorVerticalPart(float x) =>
-	(part, mirrorVert, pivot) =>
+	public static Func<SolutionEditorScreen, Part, bool, HexIndex, bool> mirrorVerticalPart(float x) =>
+	(ses, part, mirrorVert, pivot) =>
 	{
-		mirrorSimplePart(part, mirrorVert, pivot);
+		mirrorSimplePart(ses, part, mirrorVert, pivot);
 		var shift = new HexIndex((int)(2 * x), 0).Rotated(common.getPartRotation(part));
 		shiftOrigin(part, shift);
 		shiftRotation(part, HexRotation.R180);
 		return true;
 	};
-	public static bool mirrorVerticalPart0_5(Part part, bool mirrorVert, HexIndex pivot) => mirrorVerticalPart(0.5f)(part, mirrorVert, pivot);
-	public static bool mirrorVerticalPart0_0(Part part, bool mirrorVert, HexIndex pivot) // optimized
+	public static bool mirrorVerticalPart0_5(SolutionEditorScreen ses, Part part, bool mirrorVert, HexIndex pivot) => mirrorVerticalPart(0.5f)(ses, part, mirrorVert, pivot);
+	public static bool mirrorVerticalPart0_0(SolutionEditorScreen ses, Part part, bool mirrorVert, HexIndex pivot) // optimized
 	{
-		mirrorSimplePart(part, mirrorVert, pivot);
+		mirrorSimplePart(ses, part, mirrorVert, pivot);
 		shiftRotation(part, HexRotation.R180);
 		return true;
 	}
@@ -270,35 +283,35 @@ public static class MirrorTool
 	/// (Here y = 0 is the horizontal line the goes through the origin hex.)
 	/// </summary>
 	/// <param name="y">The horizontal line of symmetry.</param>
-	public static Func<Part, bool, HexIndex, bool> mirrorHorizontalPart(int y) =>
-	(part, mirrorVert, pivot) =>
+	public static Func<SolutionEditorScreen, Part, bool, HexIndex, bool> mirrorHorizontalPart(int y) =>
+	(ses, part, mirrorVert, pivot) =>
 	{
-		mirrorSimplePart(part, mirrorVert, pivot);
+		mirrorSimplePart(ses, part, mirrorVert, pivot);
 		var shift = new HexIndex(y, -2*y).Rotated(common.getPartRotation(part));
 		shiftOrigin(part, shift);
 		return true;
 	};
-	public static bool mirrorHorizontalPart0_0(Part part, bool mirrorVert, HexIndex pivot) => mirrorSimplePart(part, mirrorVert, pivot); // optimized
+	public static bool mirrorHorizontalPart0_0(SolutionEditorScreen ses, Part part, bool mirrorVert, HexIndex pivot) => mirrorSimplePart(ses, part, mirrorVert, pivot); // optimized
 
 	/// <summary>
 	/// A simple mirror rule for arms.
 	/// Works for any arm part that is symmetric across the horizontal line that passes through its origin hex.
 	/// </summary>
-	public static bool mirrorVanillaArm(Part part, bool mirrorVert, HexIndex pivot)
+	public static bool mirrorVanillaArm(SolutionEditorScreen ses, Part part, bool mirrorVert, HexIndex pivot)
 	{
-		mirrorSimplePart(part, mirrorVert, pivot);
+		mirrorSimplePart(ses, part, mirrorVert, pivot);
 		mirrorInstructions(part);
 		return true;
 	}
 
-	public static bool mirrorVanBerlo(Part part, bool mirrorVert, HexIndex pivot)
+	public static bool mirrorVanBerlo(SolutionEditorScreen ses, Part part, bool mirrorVert, HexIndex pivot)
 	{
-		mirrorVanillaArm(part, mirrorVert, pivot);
+		mirrorVanillaArm(ses, part, mirrorVert, pivot);
 		shiftRotation(part, HexRotation.R180);
 		return true;
 	}
 
-	public static bool mirrorTrack(Part part, bool mirrorVert, HexIndex pivot)
+	public static bool mirrorTrack(SolutionEditorScreen ses, Part part, bool mirrorVert, HexIndex pivot)
 	{
 		var track = common.getTrackList(part);
 		for (int i = 0; i < track.Count; i++)
@@ -310,7 +323,7 @@ public static class MirrorTool
 		return true;
 	}
 
-	public static bool mirrorConduit(Part part, bool mirrorVert, HexIndex pivot)
+	public static bool mirrorConduit(SolutionEditorScreen ses, Part part, bool mirrorVert, HexIndex pivot)
 	{
 		//vanilla conduits have an edge between every pair of adjacent hexes
 		//so we need only check the hex footprint
@@ -334,10 +347,83 @@ public static class MirrorTool
 		return canMirror;
 	}
 
-	public static bool mirrorInput(Part part, bool mirrorVert, HexIndex pivot)
+	public static bool mirrorStandardIO(SolutionEditorScreen ses, Part part, bool mirrorVert, HexIndex pivot)
 	{
 		//we can check the hex footprint to start,
-		//but we also need to check atom types and edge types
+		//but we also need to check atom types and bond types
+		HexIndex origin = common.getPartOrigin(part);
+		HexRotation rotation = common.getPartRotation(part);
+		var solution = ses.method_502();
+		//get the input/output molecule, as it exists in realspace, and extract the atom/bond data
+		Molecule molecule = part.method_1185(solution).method_1115(rotation).method_1117(origin);
+		var moleculeDyn = new DynamicData(molecule);
+		var atomDict = moleculeDyn.Get<Dictionary<HexIndex, Atom>>("field_2642");
+		var bondList = moleculeDyn.Get<List<class_277>>("field_2643");
+
+		//first find footprint transformations - if none exist, we can end early
+		List<HexIndex> startFootprint = new();
+		List<HexIndex> targetFootprint = new();
+		foreach (var hex in atomDict.Keys)
+		{
+			startFootprint.Add(hex);
+			targetFootprint.Add(mirrorHex(hex, mirrorVert, pivot));
+		}
+		var transforms = getFootprintTransformations(startFootprint, origin, targetFootprint);
+		if (transforms.Count == 0) return false;
+
+		//else we have a chance - check the transforms
+		Dictionary<HexIndex, Atom> targetDict;
+		foreach (var transform in transforms)
+		{
+			bool canMirror = true;
+			var rot = transform.Key;
+			var shift = transform.Value;
+
+			//helper function
+			HexIndex transformedMirrorHex(HexIndex hex)
+			{
+				var ret = mirrorHex(hex, mirrorVert, pivot);
+				return (ret - shift).RotatedAround(origin,rot.Negative());
+			}
+
+			//check if the transform matches the mirror
+			foreach (var pair in atomDict)
+			{
+				if (pair.Value.field_2275 != atomDict[transformedMirrorHex(pair.Key)].field_2275) //we know the transformed footprint matches up, so this dictionary check is always safe
+				{
+					canMirror = false;
+					break;
+				}
+			}
+			if (!canMirror) continue;
+
+			//else the atoms match up - time to check bonds
+			foreach (var bond in bondList)
+			{
+				var transformedmirroredBond = new class_277(bond.field_2186, transformedMirrorHex(bond.field_2187), transformedMirrorHex(bond.field_2188));
+				bool foundBond = false;
+				foreach (var comparand in bondList)
+				{
+					if (bondsMatch(comparand, transformedmirroredBond))
+					{
+						foundBond = true;
+						break;
+					}
+				}
+				if (!foundBond)
+				{
+					canMirror = false;
+					break;
+				}
+			}
+			if (!canMirror) continue;
+
+			//else bonds match up - the transform works!
+			shiftRotation(part, rot);
+			shiftOrigin(part, shift);
+			return true;
+		}
+
 		return false;
 	}
 	#endregion
@@ -378,7 +464,7 @@ public static class MirrorTool
 			var clonedPart = common.clonePart(part);
 			var partType = getDraggedPartType(draggedPart);
 
-			if (!mirrorRules.Keys.Contains(partType) || !mirrorRules[partType](clonedPart, mirrorVert, cursorHex)) // can we mirror the part?
+			if (!mirrorRules.Keys.Contains(partType) || !mirrorRules[partType](SES_self, clonedPart, mirrorVert, cursorHex)) // can we mirror the part?
 			{
 				//could not mirror the part, so the whole operation fails and we must return early
 				common.playSound(class_238.field_1991.field_1872, 0.2f);  // 'sounds/ui_modal'
@@ -431,8 +517,8 @@ public static class MirrorTool
 
 		//parts that may or may not be mirror-able ///////////////// TO-DO: actually implement these
 		addRule(common.IOConduit(), mirrorConduit);
-		//addRule(common.IOInput(), mirrorInvalid);
-		//addRule(common.IOOutputStandard(), mirrorInvalid);
+		addRule(common.IOInput(), mirrorStandardIO);
+		addRule(common.IOOutputStandard(), mirrorStandardIO);
 		//addRule(common.IOOutputInfinite(), mirrorInvalid);
 	}
 	//---------------------------------------------------//

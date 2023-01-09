@@ -141,8 +141,6 @@ public static class AreaDisplay
 
 		if (showWidth)
 		{
-			//
-			
 			int q0, q1, r0, r1, h;
 			bool leftInnie, rightOutie;
 			r0 = minH[dirW];
