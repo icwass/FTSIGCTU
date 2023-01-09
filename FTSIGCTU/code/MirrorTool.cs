@@ -147,20 +147,10 @@ public static class MirrorTool
 	public static Dictionary<HexRotation, HexIndex> getFootprintTransformations(List<HexIndex> startList, HexIndex pivot, List<HexIndex> targetList)
 	{
 		var ret = new Dictionary<HexRotation, HexIndex>();
-		HashSet<HexIndex> start = new();
-		HashSet<HexIndex> target = new();
-		foreach (var hex in startList)
-		{
-			start.Add(hex);
-		}
-		foreach (var hex in targetList)
-		{
-			target.Add(hex);
-		}
 		// if the footprints have different sizes, then no translation is possible, so return early
-		if (start.Count != target.Count) return ret;
+		if (startList.Count != targetList.Count) return ret;
 		// if the footprint is null, then all translations work, so return early
-		var count = target.Count;
+		var count = targetList.Count;
 		if (count == 0)
 		{
 			for (int i = 0; i < 6; i++)
@@ -170,9 +160,9 @@ public static class MirrorTool
 			return ret;
 		}
 
-		//let the real work begin
+		//otherwise, let the real work begin
 		var targetSum = new HexIndex(0, 0);
-		foreach (var hex in target)
+		foreach (var hex in targetList)
 		{
 			targetSum += hex;
 		}
@@ -181,7 +171,7 @@ public static class MirrorTool
 		{
 			var rotation = new HexRotation(i);
 			List<HexIndex> rotList = new();
-			foreach (var hex in start)
+			foreach (var hex in startList)
 			{
 				rotList.Add(hex.RotatedAround(pivot, rotation));
 			}
@@ -206,7 +196,7 @@ public static class MirrorTool
 			//check the translation to see if it works
 			var translation = new HexIndex(sum.Q / count, sum.R / count);
 
-			if (rotList.Any(x => !target.Contains(x + translation)))
+			if (rotList.Any(x => !targetList.Contains(x + translation)))
 			{
 				//the translation doesn't work
 				continue;
@@ -369,9 +359,8 @@ public static class MirrorTool
 			targetFootprint.Add(mirrorHex(hex, mirrorVert, pivot));
 		}
 		var transforms = getFootprintTransformations(startFootprint, origin, targetFootprint);
-		if (transforms.Count == 0) return false;
 
-		//else we have a chance - check the transforms
+		//check the transforms
 		Dictionary<HexIndex, Atom> targetDict;
 		foreach (var transform in transforms)
 		{
@@ -423,6 +412,18 @@ public static class MirrorTool
 			shiftOrigin(part, shift);
 			return true;
 		}
+		//none of the transforms will work - cannot mirror
+		return false;
+	}
+
+	public static bool mirrorInfiniteOutput(SolutionEditorScreen ses, Part part, bool mirrorVert, HexIndex pivot)
+	{
+		//infiniteOutputs cannot be rotated, so the only transform that will work is a translation
+		//so horizontal mirroring cannot happen
+		if (!mirrorVert) return false;
+
+		//
+
 
 		return false;
 	}
@@ -519,7 +520,7 @@ public static class MirrorTool
 		addRule(common.IOConduit(), mirrorConduit);
 		addRule(common.IOInput(), mirrorStandardIO);
 		addRule(common.IOOutputStandard(), mirrorStandardIO);
-		//addRule(common.IOOutputInfinite(), mirrorInvalid);
+		addRule(common.IOOutputInfinite(), mirrorInfiniteOutput);
 	}
 	//---------------------------------------------------//
 }
