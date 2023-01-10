@@ -361,7 +361,6 @@ public static class MirrorTool
 		var transforms = getFootprintTransformations(startFootprint, origin, targetFootprint);
 
 		//check the transforms
-		Dictionary<HexIndex, Atom> targetDict;
 		foreach (var transform in transforms)
 		{
 			bool canMirror = true;
@@ -421,11 +420,9 @@ public static class MirrorTool
 		//infiniteOutputs cannot be rotated, so the only transform that will work is a translation
 		//so horizontal mirroring cannot happen
 		if (!mirrorVert) return false;
-
-		//
-
-
-		return false;
+		//i COULD write code optimized for infinities
+		//but i'm lazy lmao :^) we just gonna do this:
+		return mirrorStandardIO(ses, part, true, pivot);
 	}
 	#endregion
 
