@@ -104,7 +104,7 @@ public static class ConduitEditor
 
 		if (current_interface.GetType() == (new NormalInputMode()).GetType() && Input.IsControlHeld() && Input.IsSdlKeyPressed(editingKey))
 		{
-			//we are trying to either create or destroy conduit
+			//we are trying to do something with conduit
 
 			class_6 partSelection = SES_self.field_4011;
 			int sizeOfSelection = partSelection.method_13();
