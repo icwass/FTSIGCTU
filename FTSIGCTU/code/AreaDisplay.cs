@@ -21,9 +21,17 @@ public static class AreaDisplay
 	private static bool showHeight = false;
 	private static bool showWidth = false;
 
+	private static bool hoveringHex = false;
+	private static bool targetingHex = false;
+	private static HexIndex hoverHex = new HexIndex(0, 0);
+	private static HexIndex targetHex = new HexIndex(0, 0);
+
 	private enum resource : byte
 	{
 		blank,
+		markedHover,
+		markedHex,
+		markedPulse,
 		heightUpper0,
 		heightLower0,
 		heightUpper60,
@@ -56,6 +64,27 @@ public static class AreaDisplay
 		for (int i = 0; i < reps; i++)
 		{
 			class_135.method_271(tex, Color.White.WithAlpha(alpha), vec2.Rounded());
+		}
+	}
+	public static void drawHoverHex(Vector2 param_5533)
+	{
+		if (!hoveringHex) return;
+		if (targetingHex && targetHex == hoverHex) return;
+		Vector2 vector2 = class_187.field_1742.method_491(hoverHex, param_5533) + new Vector2(-40f, -47f);
+		int reps = common.drawThickHexes ? 2 : 1;
+		for (int i = 1; i < reps; i++) class_135.method_272(textures[(int)resource.markedHover], vector2);
+	}
+
+	public static void drawTargetHex(Vector2 param_5533)
+	{
+		if (!targetingHex) return;
+		Vector2 vector2 = class_187.field_1742.method_491(targetHex, param_5533) + new Vector2(-40f, -47f);
+		float a = class_162.method_415((float)Math.Cos((double)Time.NowInSeconds() * 3.0), -1f, 1f, 0.3f, 1f);
+		int reps = common.drawThickHexes ? 2 : 1;
+		for (int i = 1; i < reps; i++)
+		{
+			class_135.method_272(textures[(int)resource.markedHex], vector2);
+			class_135.method_271(textures[(int)resource.markedPulse], Color.White.WithAlpha(a), vector2);
 		}
 	}
 
@@ -245,6 +274,65 @@ public static class AreaDisplay
 
 	//---------------------------------------------------//
 
+	public static void SEPP_method_221(SolutionEditorProgramPanel SEPPSelf)
+	{
+		var SES = new DynamicData(SEPPSelf).Get<SolutionEditorScreen>("field_2007");
+		bool simStopped = (SES.method_503() == enum_128.Stopped);
+
+		Vector2 param_4697 = new Vector2(class_115.field_1433.X - 236, 266f);
+		Bounds2 bounds2 = Bounds2.WithSize(param_4697, new Vector2(57f, 25f));
+		bool flag = bounds2.Contains(class_115.method_202()) && !SES.method_2118();
+
+		//----------------------------------//
+		//area-speed-mode logic
+		var maybeSim = new DynamicData(SES).Get<Maybe<Sim>>("field_4022");
+		bool SIM_exists = maybeSim.method_1085();
+		Sim SIM = null;
+		if (SIM_exists) SIM = maybeSim.method_1087();
+		bool simRunning = (SES.method_503() != enum_128.Stopped);
+		bool simPaused = (SES.method_503() == enum_128.Paused);
+		int cycle = SES.method_2127();
+
+		if (targetingHex && (simStopped || simPaused))//stop fast-mode if we stop running the simulation
+		{
+			targetingHex = false;
+			SES.field_4030 = (Maybe<int>)struct_18.field_1431;
+		}
+
+		Vector2 mouseCoord = class_115.method_202();
+		bool userAttemptingHover = SolutionEditorProgramPanel.method_2079() && common.withinBoardEditingBounds(mouseCoord, SES);
+
+		Maybe<Sim> maybeCompiledProgram = Sim.method_1824((SolutionEditorBase)SES);
+		bool allPartsPlaced = (SES.method_502().field_3919.Where(part => part.method_1159().method_309()).Count() + SES.method_2113().Count<Part>(part => part.method_1159().method_309()) == SES.method_502().method_1934().field_2771.Length);
+		bool solutionCompiledCorrectly = maybeCompiledProgram.method_1085();
+		bool readyToStart = allPartsPlaced && solutionCompiledCorrectly;
+
+		hoveringHex = userAttemptingHover && readyToStart;
+
+		if (hoveringHex)
+		{
+			//holding the speedy-key and above the playing field
+			class_269.field_2106 = class_238.field_1994.field_49;//change cursor shape to FAST-FORWARD
+			hoverHex = common.getHexFromPoint(mouseCoord, SES);//hex we might click on
+			if (class_115.method_206((enum_142)1))//if left-clicked
+			{
+				targetHex = hoverHex;
+				targetingHex = true;
+				if (!simRunning) SES.method_2097(maybeCompiledProgram.method_1087());
+				if (SES.method_503() != enum_128.Playing) SES.method_2098(false);
+			}
+		}
+
+		if (targetingHex && SIM_exists && SIM.field_3824.Contains(targetHex))//stop fast-mode if targetHex gets covered
+		{
+			targetingHex = false;
+			SES.field_4030 = (Maybe<int>)(cycle + 1);
+		}
+
+		if (targetingHex) SES.field_4030 = (Maybe<int>)(cycle + 10);
+
+	}
+
 	public static void c153_method_221(class_153 c153_self)
 	{
 		var c153_dyn = new DynamicData(c153_self);
@@ -273,10 +361,10 @@ public static class AreaDisplay
 
 		if (showHeight || showWidth) displayHeightWidth(ses, hexes);
 
-
-
-
-
+		//draw target hex and hover hex
+		Vector2 vec2 = c153_self.method_359();
+		drawHoverHex(vec2);
+		drawTargetHex(vec2);
 	}
 
 	public static void LoadPuzzleContent()
@@ -289,7 +377,9 @@ public static class AreaDisplay
 
 		string path = "ftsigctu/textures/board/areaHex/";
 		textures[(int)resource.blank] = class_235.method_615(path + "blank");
-		textures[(int)resource.heightLower0] = class_235.method_615(path + "height_lower0");
+		textures[(int)resource.markedHover] = class_235.method_615(path + "markedHover");
+		textures[(int)resource.markedHex] = class_235.method_615(path + "markedHex");
+		textures[(int)resource.markedPulse] = class_235.method_615(path + "markedPulse");
 		textures[(int)resource.heightUpper0] = class_235.method_615(path + "height_upper0");
 		textures[(int)resource.heightLower60] = class_235.method_615(path + "height_lower60");
 		textures[(int)resource.heightUpper60] = class_235.method_615(path + "height_upper60");
