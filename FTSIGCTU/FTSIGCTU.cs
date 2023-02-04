@@ -76,6 +76,7 @@ public class MainClass : QuintessentialMod
 		MirrorTool.LoadPuzzleContent();
 		Miscellaneous.LoadPuzzleContent();
 		AreaDisplay.LoadPuzzleContent();
+		DebugParts.LoadPuzzleContent();
 	}
 
 	public override void Unload()
@@ -99,6 +100,7 @@ public class MainClass : QuintessentialMod
 		MirrorTool.SolutionEditorScreen_method_50(SES_self);
 		InstructionEditor.SolutionEditorScreen_method_50(SES_self);
 		Miscellaneous.SolutionEditorScreen_method_50(SES_self);
+		DebugParts.SolutionEditorScreen_method_50(SES_self);
 		orig(SES_self, param_5703);
 		TrackEditor.SolutionEditorScreen_method_50(SES_self);
 	}

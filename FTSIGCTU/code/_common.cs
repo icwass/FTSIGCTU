@@ -206,6 +206,15 @@ public static class common
 		}
 		return list;
 	}
+	public static int getPartIndex(Part part)
+	{
+		return part.method_1167();
+	}
+	public static void setPartIndex(Part part, int index)
+	{
+		var dynPart = new DynamicData(part);
+		dynPart.Set("field_2698", index);
+	}
 
 	public static Part clonePart(Part orig)
 	{
