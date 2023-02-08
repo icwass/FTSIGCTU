@@ -380,6 +380,7 @@ public static class AreaDisplay
 		textures[(int)resource.markedHover] = class_235.method_615(path + "markedHover");
 		textures[(int)resource.markedHex] = class_235.method_615(path + "markedHex");
 		textures[(int)resource.markedPulse] = class_235.method_615(path + "markedPulse");
+		textures[(int)resource.heightLower0] = class_235.method_615(path + "height_lower0");
 		textures[(int)resource.heightUpper0] = class_235.method_615(path + "height_upper0");
 		textures[(int)resource.heightLower60] = class_235.method_615(path + "height_lower60");
 		textures[(int)resource.heightUpper60] = class_235.method_615(path + "height_upper60");
