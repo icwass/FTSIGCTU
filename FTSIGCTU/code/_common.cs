@@ -9,6 +9,7 @@ using System.Reflection;
 
 namespace FTSIGCTU;
 using PartType = class_139;
+using Texture = class_256;
 
 public static class common
 {
@@ -152,6 +153,7 @@ public static class common
 	{
 		return class_187.field_1742.method_491(hex, SES.field_4009);
 	}
+	public static Vector2 textureDimensions(Texture texture) => texture.field_2056.ToVector2();
 	//---------------------------------------------------//
 	//input helpers
 	public static bool withinBoardEditingBounds(Vector2 point, SolutionEditorScreen SES)

@@ -21,6 +21,9 @@ public static class AreaDisplay
 	private static bool showHeight = false;
 	private static bool showWidth = false;
 
+	private static int metric_height;
+	private static int metric_width;
+
 	private static bool hoveringHex = false;
 	private static bool targetingHex = false;
 	private static HexIndex hoverHex = new HexIndex(0, 0);
@@ -153,6 +156,9 @@ public static class AreaDisplay
 			}
 		}
 
+		metric_height = maxH[dirH] - minH[dirH] + 1;
+		metric_width = maxW[dirW] - minW[dirW] + 1;
+
 		if (showHeight)
 		{
 			int q0, q1, q2, q3, r0, r1, w;
@@ -274,6 +280,9 @@ public static class AreaDisplay
 
 	//---------------------------------------------------//
 
+	public static int getHeightMetric => showHeight ? metric_height : -1;
+	public static int getWidthMetric => showWidth ? metric_width : -1;
+
 	public static void SEPP_method_221(SolutionEditorProgramPanel SEPPSelf)
 	{
 		var SES = new DynamicData(SEPPSelf).Get<SolutionEditorScreen>("field_2007");
@@ -343,10 +352,12 @@ public static class AreaDisplay
 		if (Input.IsSdlKeyPressed(heightKey))
 		{
 			showHeight = !showHeight;
+			showWidth = false;
 			common.playSound(sound_toggle, 0.2f);
 		}
 		if (Input.IsSdlKeyPressed(widthKey))
 		{
+			showHeight = false;
 			showWidth = !showWidth;
 			common.playSound(sound_toggle, 0.2f);
 		}
@@ -361,7 +372,7 @@ public static class AreaDisplay
 
 		if (showHeight || showWidth) displayHeightWidth(ses, hexes);
 
-		//draw target hex and hover hex
+		//draw target hex and hover hex for speed-mode
 		Vector2 vec2 = c153_self.method_359();
 		drawHoverHex(vec2);
 		drawTargetHex(vec2);
@@ -392,6 +403,9 @@ public static class AreaDisplay
 		textures[(int)resource.widthRighter60] = class_235.method_615(path + "width_righter60");
 		textures[(int)resource.widthLefter300] = class_235.method_615(path + "width_lefter300");
 		textures[(int)resource.widthRighter300] = class_235.method_615(path + "width_righter300");
+
+		metric_height = -1;
+		metric_width = -1;
 	}
 
 	//---------------------------------------------------//

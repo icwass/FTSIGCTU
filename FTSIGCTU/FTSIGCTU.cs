@@ -50,6 +50,8 @@ public class MainClass : QuintessentialMod
 		public bool disableOverlapDetection = false;
 		[SettingsLabel("Allow duplicate Disposals, Berlos, inputs and outputs.")]
 		public bool allowDuplicateParts = false;
+		[SettingsLabel("Use 'Gold' instead of 'Cost' in the metric display.")]
+		public bool writeGoldNotCost = false;
 	}
 	public override void ApplySettings()
 	{
@@ -61,6 +63,7 @@ public class MainClass : QuintessentialMod
 		ConduitEditor.ApplySettings(SET.allowConduitEditor);
 		InstructionEditor.ApplySettings(SET.drawBlanksOnProgrammingTray, SET.allowMultipleOverrides);
 		Miscellaneous.ApplySettings(SET.allowDuplicateParts);
+		MetricDisplay.ApplySettings(SET.writeGoldNotCost);
 
 		disableOverlapDetection = SET.disableOverlapDetection;
 	}
@@ -77,6 +80,7 @@ public class MainClass : QuintessentialMod
 		Miscellaneous.LoadPuzzleContent();
 		AreaDisplay.LoadPuzzleContent();
 		DebugParts.LoadPuzzleContent();
+		MetricDisplay.LoadPuzzleContent();
 	}
 
 	public override void Unload()
@@ -99,6 +103,7 @@ public class MainClass : QuintessentialMod
 	{
 		AreaDisplay.SEPP_method_221(SEPP_self);
 		orig(SEPP_self, param_5658);
+		MetricDisplay.SEPP_method_221(SEPP_self);
 	}
 	public void SES_Method_50(On.SolutionEditorScreen.orig_method_50 orig, SolutionEditorScreen SES_self, float param_5703)
 	{

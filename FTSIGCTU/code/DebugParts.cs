@@ -150,11 +150,6 @@ public static class DebugParts
 
 
 
-
-
-
-
-
 		QApi.RunAfterCycle((sim_self, flag) =>
 		{
 			var sim_dyn = new DynamicData(sim_self);
