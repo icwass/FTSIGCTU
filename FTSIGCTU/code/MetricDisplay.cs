@@ -142,7 +142,7 @@ public static class MetricDisplay
 			}
 			else
 			{
-				display_metric(class_134.method_253("PERIOD", string.Empty).method_1060() + ":", period.method_453(), new Vector2(xpos, 0));
+				display_metric(class_134.method_253("PERIOD", string.Empty).method_1060() + ":", period >= 0 ? period.method_453() : "----", new Vector2(xpos, 0));
 			}
 		}
 		else
