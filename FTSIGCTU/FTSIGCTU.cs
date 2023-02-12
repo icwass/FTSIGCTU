@@ -97,13 +97,23 @@ public class MainClass : QuintessentialMod
 		On.Solution.method_1947 += Solution_method_1947;
 		On.Sim.method_1824 += Sim_method_1824;
 		On.SolutionEditorProgramPanel.method_221 += SolutionEditorProgramPanel_Method_221;
+
+		On.SolutionEditorScreen.method_511 += SES_Method_511;
+
 		//(this == Solution) HashSet<HexIndex> method_1947(Maybe<Part> param_5487, enum_137 param_5488)
 	}
+
+	public static float SES_Method_511(On.SolutionEditorScreen.orig_method_511 orig, SolutionEditorScreen SES_self)
+	{
+		return orig(SES_self) * Miscellaneous.SimSpeedFactor();
+	}
+
 	public void SolutionEditorProgramPanel_Method_221(On.SolutionEditorProgramPanel.orig_method_221 orig, SolutionEditorProgramPanel SEPP_self, float param_5658)
 	{
 		AreaDisplay.SEPP_method_221(SEPP_self);
 		orig(SEPP_self, param_5658);
 		MetricDisplay.SEPP_method_221(SEPP_self);
+		Miscellaneous.SEPP_method_221(SEPP_self);
 	}
 	public void SES_Method_50(On.SolutionEditorScreen.orig_method_50 orig, SolutionEditorScreen SES_self, float param_5703)
 	{

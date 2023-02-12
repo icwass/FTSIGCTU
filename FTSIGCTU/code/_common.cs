@@ -16,9 +16,10 @@ public static class common
 	//
 	public static bool drawThickHexes = false;
 	//---------------------------------------------------//
-	public static void playSound(Sound SOUND, float VOLUME)
+	public static void playSound(Sound SOUND, float VOLUME = 1f)
 	{
-		class_158.method_376(SOUND.field_4061, class_269.field_2109 * VOLUME, false);
+		//class_158.method_376(SOUND.field_4061, class_269.field_2109 * VOLUME, false);
+		SOUND.method_28(VOLUME);
 	}
 	//---------------------------------------------------//
 	//part types
