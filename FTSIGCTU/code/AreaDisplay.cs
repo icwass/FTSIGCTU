@@ -329,6 +329,7 @@ public static class AreaDisplay
 				targetingHex = true;
 				if (!simRunning) SES.method_2097(maybeCompiledProgram.method_1087());
 				if (SES.method_503() != enum_128.Playing) SES.method_2098(false);
+				SES.field_4030 = (Maybe<int>)(int.MaxValue);
 			}
 		}
 
@@ -337,9 +338,6 @@ public static class AreaDisplay
 			targetingHex = false;
 			SES.field_4030 = (Maybe<int>)(cycle + 1);
 		}
-
-		if (targetingHex) SES.field_4030 = (Maybe<int>)(cycle + 10);
-
 	}
 
 	public static void c153_method_221(class_153 c153_self)
