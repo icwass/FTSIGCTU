@@ -52,6 +52,8 @@ public class MainClass : QuintessentialMod
 		public bool allowDuplicateParts = false;
 		[SettingsLabel("Use 'Gold' instead of 'Cost' in the metric display.")]
 		public bool writeGoldNotCost = false;
+		[SettingsLabel("Change the speedtray for ZoomTool compatibility.")]
+		public bool speedtrayZoomtoolWorkaround = false;
 	}
 	public override void ApplySettings()
 	{
@@ -62,7 +64,7 @@ public class MainClass : QuintessentialMod
 		TrackEditor.ApplySettings(SET.alsoReverseArms, SET.allowQuantumTracking);
 		ConduitEditor.ApplySettings(SET.allowConduitEditor);
 		InstructionEditor.ApplySettings(SET.drawBlanksOnProgrammingTray, SET.allowMultipleOverrides);
-		Miscellaneous.ApplySettings(SET.allowDuplicateParts);
+		Miscellaneous.ApplySettings(SET.allowDuplicateParts, SET.speedtrayZoomtoolWorkaround);
 		MetricDisplay.ApplySettings(SET.writeGoldNotCost);
 
 		disableOverlapDetection = SET.disableOverlapDetection;

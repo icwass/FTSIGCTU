@@ -22,6 +22,7 @@ public static class Miscellaneous
 	private static Texture[] textures;
 	private static float speedtray_position_max = 72.0f;
 	private static float speedtray_position = speedtray_position_max; //between 0 (all the way out) and speedtray_position_max (hidden)
+	private static bool speedtrayZoomtoolWorkaround = false;
 
 	private enum resource : byte
 	{
@@ -97,7 +98,7 @@ public static class Miscellaneous
 
 	public static void SEPP_method_221(SolutionEditorProgramPanel SEPPSelf)
 	{
-		//---------- draw the speed slider ----------//
+		//---------- draw the speedtray ----------//
 		// tray and reference points
 		Texture speed_tray = textures[(int)resource.speed_tray];
 		Vector2 speed_base_position = new Vector2(class_115.field_1433.X - common.textureDimensions(speed_tray).X + speedtray_position, 316f);
@@ -115,25 +116,52 @@ public static class Miscellaneous
 
 		class_135.method_272(speed_tray, speed_base_position);
 
-		// buttons
 		Vector2 button_position = speed_base_position + new Vector2(38f, 17f);
-		bool flag = simspeed_index > 0;
-		if (my_sepp_method_2066(SEPPSelf, textures[(int)resource.speed_slow_icon], button_position, flag))
+
+		if (!speedtrayZoomtoolWorkaround)
 		{
-			simspeed_index--;
-			common.playSound(clickButton);
+			// buttons
+			bool flag = simspeed_index > 0;
+			if (my_sepp_method_2066(SEPPSelf, textures[(int)resource.speed_slow_icon], button_position, flag))
+			{
+				simspeed_index--;
+				common.playSound(clickButton);
+			}
+
+			button_position += new Vector2(0f, 96f);
+			flag = simspeed_index < simspeed_factor.Length - 1;
+			if (my_sepp_method_2066(SEPPSelf, textures[flag ? (int)resource.speed_fast_icon : (int)resource.speed_fastest_icon], button_position, flag))
+			{
+				simspeed_index++;
+				common.playSound(clickButton);
+			}
+
+			// slider
+			class_135.method_272(textures[(int)resource.speed_slider], speed_base_position + new Vector2(48f, 46f + Math.Min(simspeed_index, simspeed_factor.Length - 2) * 12.0f));
+		}
+		else // special workaround - buttons that manually set the speed
+		{
+			Texture[] icons = new Texture[6] {
+				textures[(int)resource.speed_slow_icon],
+				textures[(int)resource.speed_slow_icon],
+				class_238.field_1989.field_73, // a texture consisting of a single, transparent pixel
+				textures[(int)resource.speed_fast_icon],
+				textures[(int)resource.speed_fast_icon],
+				textures[(int)resource.speed_fastest_icon]
+			};
+			button_position += new Vector2(0f, -12f);
+			for (int i = 0; i < 6; i++)
+			{
+				if (my_sepp_method_2066(SEPPSelf, icons[i], button_position, true))
+				{
+					simspeed_index = i;
+					common.playSound(clickButton);
+				}
+				button_position += new Vector2(0f, 24f);
+			}
+
 		}
 
-		button_position += new Vector2(0f, 96f);
-		flag = simspeed_index < simspeed_factor.Length - 1;
-		if (my_sepp_method_2066(SEPPSelf, textures[flag ? (int)resource.speed_fast_icon : (int)resource.speed_fastest_icon], button_position, flag))
-		{
-			simspeed_index++;
-			common.playSound(clickButton);
-		}
-
-		// slider
-		class_135.method_272(textures[(int)resource.speed_slider], speed_base_position + new Vector2(48f, 46f + Math.Min(simspeed_index,simspeed_factor.Length-2) * 12.0f));
 	}
 
 	public static void LoadPuzzleContent()
@@ -152,9 +180,10 @@ public static class Miscellaneous
 		textures[(int)resource.speed_fastest_icon] = class_235.method_615(path + "speed_fastest_icon");
 	}
 
-	public static void ApplySettings(bool _allowDuplicateParts)
+	public static void ApplySettings(bool _allowDuplicateParts, bool _speedtrayZoomtoolWorkaround)
 	{
 		allowDuplicateParts = _allowDuplicateParts;
+		speedtrayZoomtoolWorkaround = _speedtrayZoomtoolWorkaround;
 
 		//allow multiple berlo wheels?
 		class_191.field_1771.field_1552 = !_allowDuplicateParts;
@@ -163,4 +192,5 @@ public static class Miscellaneous
 		class_191.field_1781.field_1552 = !_allowDuplicateParts;
 	}
 	//---------------------------------------------------//
+
 }
