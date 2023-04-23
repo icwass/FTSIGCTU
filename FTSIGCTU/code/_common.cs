@@ -257,7 +257,7 @@ public static class common
 
 	public static void addUndoHistoryCheckpoint(SolutionEditorScreen SES_self)
 	{
-		SES_self.method_502().method_1961();
+		SES_self.method_2108();
 	}
 	//---------------------------------------------------//
 	public static void ApplySettings(bool _drawThickHexes)
