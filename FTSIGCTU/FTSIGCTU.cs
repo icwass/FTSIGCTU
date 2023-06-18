@@ -54,6 +54,9 @@ public class MainClass : QuintessentialMod
 		public bool writeGoldNotCost = false;
 		[SettingsLabel("Change the speedtray for ZoomTool compatibility.")]
 		public bool speedtrayZoomtoolWorkaround = false;
+		[SettingsLabel("Show the origin on the navigation map.")]
+		public bool showCritelliOnMap = false;
+
 	}
 	public override void ApplySettings()
 	{
@@ -66,6 +69,7 @@ public class MainClass : QuintessentialMod
 		InstructionEditor.ApplySettings(SET.drawBlanksOnProgrammingTray, SET.allowMultipleOverrides);
 		Miscellaneous.ApplySettings(SET.allowDuplicateParts, SET.speedtrayZoomtoolWorkaround);
 		MetricDisplay.ApplySettings(SET.writeGoldNotCost);
+		Navigation.ApplySettings(SET.showCritelliOnMap);
 
 		disableOverlapDetection = SET.disableOverlapDetection;
 	}
@@ -83,6 +87,7 @@ public class MainClass : QuintessentialMod
 		AreaDisplay.LoadPuzzleContent();
 		DebugParts.LoadPuzzleContent();
 		MetricDisplay.LoadPuzzleContent();
+		Navigation.LoadPuzzleContent();
 	}
 
 	public override void Unload()
@@ -124,6 +129,7 @@ public class MainClass : QuintessentialMod
 		InstructionEditor.SolutionEditorScreen_method_50(SES_self);
 		Miscellaneous.SolutionEditorScreen_method_50(SES_self);
 		DebugParts.SolutionEditorScreen_method_50(SES_self);
+		Navigation.SolutionEditorScreen_method_50(SES_self);
 		orig(SES_self, param_5703);
 		TrackEditor.SolutionEditorScreen_method_50(SES_self);
 	}

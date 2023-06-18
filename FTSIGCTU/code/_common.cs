@@ -209,6 +209,18 @@ public static class common
 		}
 		return list;
 	}
+	public static List<HexIndex> getFootprintList(Part part)
+	{
+		var footprintList = part.method_1159().field_1540;
+		var origin = common.getPartOrigin(part);
+		var rot = common.getPartRotation(part);
+		var list = new List<HexIndex>();
+		foreach (HexIndex hex in footprintList)
+		{
+			list.Add(hex.Rotated(rot) + origin);
+		}
+		return list;
+	}
 	public static int getPartIndex(Part part)
 	{
 		return part.method_1167();

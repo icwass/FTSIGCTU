@@ -513,7 +513,7 @@ public static class MirrorTool
 		addRule(common.GlyphUnification(), mirrorSimplePart);
 		addRule(common.GlyphDispersion(), mirrorVerticalPart0_0);
 
-		//parts that may or may not be mirror-able ///////////////// TO-DO: actually implement these
+		//parts that may or may not be mirror-able
 		addRule(common.IOConduit(), mirrorConduit);
 		addRule(common.IOInput(), mirrorStandardIO);
 		addRule(common.IOOutputStandard(), mirrorStandardIO);

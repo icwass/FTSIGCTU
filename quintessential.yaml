@@ -7,5 +7,4 @@ DLL: "FTSIGCTU/bin/Debug/net452/FTSIGCTU.dll"
 Dependencies:
 - Name: Quintessential
   Version: 0.3.0
-#OptionalDependencies
 #Mappings:
