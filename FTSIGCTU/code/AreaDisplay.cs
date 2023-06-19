@@ -288,7 +288,7 @@ public static class AreaDisplay
 		var SES = new DynamicData(SEPPSelf).Get<SolutionEditorScreen>("field_2007");
 		bool simStopped = (SES.method_503() == enum_128.Stopped);
 
-		Vector2 param_4697 = new Vector2(class_115.field_1433.X - 236, 266f);
+		Vector2 param_4697 = new Vector2(Input.ScreenSize().X - 236, 266f);
 		Bounds2 bounds2 = Bounds2.WithSize(param_4697, new Vector2(57f, 25f));
 		bool flag = bounds2.Contains(class_115.method_202()) && !SES.method_2118();
 

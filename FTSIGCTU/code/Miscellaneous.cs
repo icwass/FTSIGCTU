@@ -101,7 +101,7 @@ public static class Miscellaneous
 		//---------- draw the speedtray ----------//
 		// tray and reference points
 		Texture speed_tray = textures[(int)resource.speed_tray];
-		Vector2 speed_base_position = new Vector2(class_115.field_1433.X - common.textureDimensions(speed_tray).X + speedtray_position, 316f);
+		Vector2 speed_base_position = new Vector2(Input.ScreenSize().X - common.textureDimensions(speed_tray).X + speedtray_position, 316f);
 		Bounds2 speed_tray_area = Bounds2.WithSize(speed_base_position - new Vector2(speedtray_position, 0f), common.textureDimensions(speed_tray));
 
 		float delta = 4f;

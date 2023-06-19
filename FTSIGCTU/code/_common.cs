@@ -162,7 +162,7 @@ public static class common
 		var SES_dyn = new DynamicData(SES);
 		var sepp = SES_dyn.Get<SolutionEditorPartsPanel>("field_4001");
 		Vector2 bottomLeft = new Vector2(310f, 268f) + new Vector2(class_162.method_417(0.0f, -360f, new DynamicData(sepp).Get<float>("field_3966")), 0.0f);
-		Vector2 resolution = class_115.field_1433;
+		Vector2 resolution = Input.ScreenSize();
 		Bounds2 fullBounds = Bounds2.WithCorners(bottomLeft, resolution);
 		Bounds2 exitBounds = Bounds2.WithSize(resolution + new Vector2(-70f, -75f), new Vector2(70f, 75f));
 

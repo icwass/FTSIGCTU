@@ -36,7 +36,7 @@ public static class MetricDisplay
 		Texture score_card = class_238.field_1989.field_99.field_706.field_746;
 		Texture text_gradient = class_238.field_1989.field_99.field_706.field_751;
 
-		position += new Vector2(class_115.field_1433.X - 364.0f, 268f); // base position
+		position += new Vector2(Input.ScreenSize().X - 364.0f, 268f); // base position
 
 		var font = class_238.field_1990.field_2142;
 		class_135.method_272(score_card, position);
@@ -53,7 +53,7 @@ public static class MetricDisplay
 		var SES = new DynamicData(SEPPSelf).Get<SolutionEditorScreen>("field_2007");
 		bool simRunning = (SES.method_503() != enum_128.Stopped);
 
-		Vector2 metric_overlay_position = new Vector2(class_115.field_1433.X - common.textureDimensions(metric_overlay).X - 300f, 296f - 32f);
+		Vector2 metric_overlay_position = new Vector2(Input.ScreenSize().X - common.textureDimensions(metric_overlay).X - 300f, 296f - 32f);
 
 		if (Input.IsSdlKeyPressed(SDL.enum_160.SDLK_6))
 		{
