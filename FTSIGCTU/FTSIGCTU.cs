@@ -50,6 +50,8 @@ public class MainClass : QuintessentialMod
 		public bool disableOverlapDetection = false;
 		[SettingsLabel("Allow duplicate Disposals, Berlos, inputs and outputs.")]
 		public bool allowDuplicateParts = false;
+		[SettingsLabel("Run the simulation even if the number of outputs is wrong.")]
+		public bool allowWrongNumberOfOutputs = false;
 		[SettingsLabel("Use 'Gold' instead of 'Cost' in the metric display.")]
 		public bool writeGoldNotCost = false;
 		[SettingsLabel("Change the speedtray for ZoomTool compatibility.")]
@@ -67,7 +69,7 @@ public class MainClass : QuintessentialMod
 		TrackEditor.ApplySettings(SET.alsoReverseArms, SET.allowQuantumTracking);
 		ConduitEditor.ApplySettings(SET.allowConduitEditor);
 		InstructionEditor.ApplySettings(SET.drawBlanksOnProgrammingTray, SET.allowMultipleOverrides);
-		Miscellaneous.ApplySettings(SET.allowDuplicateParts, SET.speedtrayZoomtoolWorkaround);
+		Miscellaneous.ApplySettings(SET.allowDuplicateParts, SET.speedtrayZoomtoolWorkaround, SET.allowWrongNumberOfOutputs);
 		MetricDisplay.ApplySettings(SET.writeGoldNotCost);
 		Navigation.ApplySettings(SET.showCritelliOnMap);
 

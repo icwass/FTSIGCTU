@@ -302,7 +302,12 @@ public static class Navigation
 		public void method_48() { }
 		public void method_50(float param_4184)
 		{
-			bool returnToEditorKeypress = Input.IsSdlKeyPressed(SDL.enum_160.SDLK_TAB) || Input.IsSdlKeyPressed(SDL.enum_160.SDLK_SPACE) || Input.IsSdlKeyPressed(SDL.enum_160.SDLK_ESCAPE);
+			bool returnToEditorKeypress =
+				Input.IsSdlKeyPressed(SDL.enum_160.SDLK_TAB)
+				|| Input.IsSdlKeyPressed(SDL.enum_160.SDLK_SPACE)
+				|| Input.IsSdlKeyPressed(SDL.enum_160.SDLK_ESCAPE)
+				|| Input.IsSdlKeyPressed(SDL.enum_160.SDLK_m)
+			;
 			bool returnToEditor = returnToEditorKeypress;
 			Sound ui_paper_back = class_238.field_1991.field_1875;
 			if (returnToEditor)

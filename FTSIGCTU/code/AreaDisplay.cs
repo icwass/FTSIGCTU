@@ -312,9 +312,9 @@ public static class AreaDisplay
 		bool userAttemptingHover = SolutionEditorProgramPanel.method_2079() && common.withinBoardEditingBounds(mouseCoord, SES);
 
 		Maybe<Sim> maybeCompiledProgram = Sim.method_1824((SolutionEditorBase)SES);
-		bool allPartsPlaced = (SES.method_502().field_3919.Where(part => part.method_1159().method_309()).Count() + SES.method_2113().Count<Part>(part => part.method_1159().method_309()) == SES.method_502().method_1934().field_2771.Length);
+		bool allOutputsPlaced = Miscellaneous.allowWrongNumberOfOutputs || (SES.method_502().field_3919.Where(part => part.method_1159().method_309()).Count() + SES.method_2113().Count<Part>(part => part.method_1159().method_309()) == SES.method_502().method_1934().field_2771.Length);
 		bool solutionCompiledCorrectly = maybeCompiledProgram.method_1085();
-		bool readyToStart = allPartsPlaced && solutionCompiledCorrectly;
+		bool readyToStart = allOutputsPlaced && solutionCompiledCorrectly;
 
 		hoveringHex = userAttemptingHover && readyToStart;
 

@@ -1,4 +1,6 @@
-﻿using MonoMod.RuntimeDetour;
+﻿using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
 using Quintessential;
 using SDL2;
@@ -14,6 +16,7 @@ public static class Miscellaneous
 {
 	//data structs, enums, variables
 	private static bool allowDuplicateParts = false;
+	public static bool allowWrongNumberOfOutputs = false;
 	private static Sound duplicatePart;
 
 	private static float[] simspeed_factor = new float[6]{ 0.1f, 0.25f, 1.0f, 4.0f, 10.0f, 100.0f };
@@ -164,6 +167,30 @@ public static class Miscellaneous
 
 	}
 
+	public static void method_221_manipulateOutputCount(ILContext il)
+	{
+		ILCursor cursor = new ILCursor(il);
+		// skip ahead to roughly where the output-count conditional begins
+		cursor.Goto(1673);
+
+		// jump ahead to just after we add the total number of output parts
+		if (!cursor.TryGotoNext(MoveType.After, instr => instr.Match(OpCodes.Add))) return;
+
+		// duplicate the sum so we can use it later
+		cursor.Emit(OpCodes.Dup);
+
+		// jump ahead to just before the branch instruction
+		cursor.GotoNext(MoveType.Before, instr => instr.Match(OpCodes.Beq_S));
+
+		cursor.EmitDelegate<Func<int, int, int>>((int boardCount, int puzzleCount) =>
+		{
+			// there is another copy of boardCount on the stack already
+			// returning boardCount will force the branch instruction to execute
+			// returning puzzleCount will yield the original behavior
+			return allowWrongNumberOfOutputs ? boardCount : puzzleCount;
+		});
+	}
+
 	public static void LoadPuzzleContent()
 	{
 		duplicatePart = class_238.field_1991.field_1841; // 'sounds/glyph_dispersion'
@@ -178,12 +205,15 @@ public static class Miscellaneous
 		textures[(int)resource.speed_slow_icon] = class_235.method_615(path + "speed_slow_icon");
 		textures[(int)resource.speed_fast_icon] = class_235.method_615(path + "speed_fast_icon");
 		textures[(int)resource.speed_fastest_icon] = class_235.method_615(path + "speed_fastest_icon");
+
+		IL.SolutionEditorProgramPanel.method_221 += method_221_manipulateOutputCount;
 	}
 
-	public static void ApplySettings(bool _allowDuplicateParts, bool _speedtrayZoomtoolWorkaround)
+	public static void ApplySettings(bool _allowDuplicateParts, bool _speedtrayZoomtoolWorkaround, bool _allowWrongNumberOfOutputs)
 	{
 		allowDuplicateParts = _allowDuplicateParts;
 		speedtrayZoomtoolWorkaround = _speedtrayZoomtoolWorkaround;
+		allowWrongNumberOfOutputs = _allowWrongNumberOfOutputs;
 
 		//allow multiple berlo wheels?
 		class_191.field_1771.field_1552 = !_allowDuplicateParts;
