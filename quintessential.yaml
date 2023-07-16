@@ -1,6 +1,6 @@
 Name: FTSIGCTU
-Version: 0.6.0
-#Icon: mod_icon.png
+Version: 0.6.1
+Icon: mod_icon.png
 Title: FTSIGCTU
 Desc: "\"Finally, This Setup Is Getting Close To Usable.\"\nAdds several quality-of-life features.\nFor info and controls, visit: https://github.com/icwass/FTSIGCTU/wiki"
 DLL: "FTSIGCTU/bin/Debug/net452/FTSIGCTU.dll"
