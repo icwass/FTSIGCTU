@@ -104,7 +104,10 @@ public static class MetricDisplay
 
 		// height/width
 		int height = AreaDisplay.getHeightMetric;
-		int width = AreaDisplay.getWidthMetric;
+		//int width = AreaDisplay.getWidthMetric;
+		Pair<int,int> width = AreaDisplay.getWidthMetric;
+		int widthWhole = width.Left;
+		int widthHalf = width.Right;
 
 
 		//-------------- display metrics --------------//
@@ -136,9 +139,9 @@ public static class MetricDisplay
 			{
 				display_metric(class_134.method_253("HEIGHT", string.Empty).method_1060() + ":", height.method_453(), new Vector2(xpos, 0));
 			}
-			else if (width >= 0)
+			else if (widthWhole >= 0)
 			{
-				display_metric(class_134.method_253("WIDTH", string.Empty).method_1060() + ":", width.method_453(), new Vector2(xpos, 0));
+				display_metric(class_134.method_253("WIDTH", string.Empty).method_1060() + ":", widthWhole.method_453() + "." + widthHalf.method_453(), new Vector2(xpos, 0));
 			}
 			else
 			{

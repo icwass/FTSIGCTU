@@ -157,7 +157,7 @@ public static class AreaDisplay
 		}
 
 		metric_height = maxH[dirH] - minH[dirH] + 1;
-		metric_width = maxW[dirW] - minW[dirW] + 1;
+		metric_width = maxW[dirW] - minW[dirW] + 2;
 
 		if (showHeight)
 		{
@@ -281,7 +281,7 @@ public static class AreaDisplay
 	//---------------------------------------------------//
 
 	public static int getHeightMetric => showHeight ? metric_height : -1;
-	public static int getWidthMetric => showWidth ? metric_width : -1;
+	public static Pair<int, int> getWidthMetric => showWidth ? new Pair<int, int>(metric_width / 2, (metric_width % 2) * 5) : new Pair<int, int>(-1, -1);
 
 	public static void SEPP_method_221(SolutionEditorProgramPanel SEPPSelf)
 	{
