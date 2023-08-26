@@ -1,4 +1,6 @@
-﻿using MonoMod.RuntimeDetour;
+﻿using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
 using Quintessential;
 using Quintessential.Settings;
@@ -104,6 +106,7 @@ public class MainClass : QuintessentialMod
 		On.class_153.method_221 += c153_Method_221;
 
 		On.Solution.method_1948 += Solution_method_1948;
+		IL.class_114.method_0 += class114_method_0_drawTrackAnywhere;
 		On.SolutionEditorProgramPanel.method_221 += SolutionEditorProgramPanel_Method_221;
 
 		On.SolutionEditorScreen.method_511 += SES_Method_511;
@@ -157,5 +160,32 @@ public class MainClass : QuintessentialMod
 			bool ret = orig(solution_self, part, hex1, hex2, rot, out errorMessage);
 			return ret;
 		}
+	}
+
+	public static void class114_method_0_drawTrackAnywhere(ILContext il)
+	{
+		bool maybeReplaceBool(bool flag) => !ignorePartPlacementRestrictions && flag;
+		ILCursor cursor = new ILCursor(il);
+		// skip ahead to roughly where the first check before "Parts cannot be placed here" begins
+		cursor.Goto(75);
+
+		// jump ahead to just before we store a boolean result in a local variable
+		if (!cursor.TryGotoNext(MoveType.Before, instr => instr.Match(OpCodes.Stloc_S))) return;
+
+		// maybe replace that boolean
+		cursor.EmitDelegate(maybeReplaceBool);
+
+		// jump to just AFTER we store the boolean result in a local variable
+		if (!cursor.TryGotoNext(MoveType.After, instr => instr.Match(OpCodes.Stloc_S))) return;
+
+		// maybe replace that boolean again
+		cursor.EmitDelegate(maybeReplaceBool);
+
+		// repeat the whole process, but for the second group of checks
+		cursor.Goto(186);
+		if (!cursor.TryGotoNext(MoveType.Before, instr => instr.Match(OpCodes.Stloc_S))) return;
+		cursor.EmitDelegate(maybeReplaceBool);
+		if (!cursor.TryGotoNext(MoveType.After, instr => instr.Match(OpCodes.Stloc_S))) return;
+		cursor.EmitDelegate(maybeReplaceBool);
 	}
 }
