@@ -22,7 +22,7 @@ public class MainClass : QuintessentialMod
 {
 
 
-	public static bool disableOverlapDetection = false;
+	public static bool ignorePartPlacementRestrictions = false;
 	
 	public override Type SettingsType => typeof(MySettings);
 	public class MySettings
@@ -46,8 +46,8 @@ public class MainClass : QuintessentialMod
 		public bool allowMultipleOverrides = false;
 
 		//need to put this somewhere
-		[SettingsLabel("Disable overlap detection.")]
-		public bool disableOverlapDetection = false;
+		[SettingsLabel("Disable overlap detection and other part-placement restrictions.")]
+		public bool ignorePartPlacementRestrictions = false;
 		[SettingsLabel("Allow duplicate Disposals, Berlos, inputs and outputs.")]
 		public bool allowDuplicateParts = false;
 		[SettingsLabel("Run the simulation even if the number of outputs is wrong.")]
@@ -73,7 +73,7 @@ public class MainClass : QuintessentialMod
 		MetricDisplay.ApplySettings(SET.writeGoldNotCost);
 		Navigation.ApplySettings(SET.showCritelliOnMap);
 
-		disableOverlapDetection = SET.disableOverlapDetection;
+		ignorePartPlacementRestrictions = SET.ignorePartPlacementRestrictions;
 	}
 	public override void Load()
 	{
@@ -103,13 +103,10 @@ public class MainClass : QuintessentialMod
 		On.SolutionEditorScreen.method_50 += SES_Method_50;
 		On.class_153.method_221 += c153_Method_221;
 
-		On.Solution.method_1947 += Solution_method_1947;
-		On.Sim.method_1824 += Sim_method_1824;
+		On.Solution.method_1948 += Solution_method_1948;
 		On.SolutionEditorProgramPanel.method_221 += SolutionEditorProgramPanel_Method_221;
 
 		On.SolutionEditorScreen.method_511 += SES_Method_511;
-
-		//(this == Solution) HashSet<HexIndex> method_1947(Maybe<Part> param_5487, enum_137 param_5488)
 	}
 
 	public static float SES_Method_511(On.SolutionEditorScreen.orig_method_511 orig, SolutionEditorScreen SES_self)
@@ -142,50 +139,23 @@ public class MainClass : QuintessentialMod
 		AreaDisplay.c153_method_221(c153_self);
 	}
 
-
-	public HashSet<HexIndex> Solution_method_1947(On.Solution.orig_method_1947 orig, Solution solution_self, Maybe<Part> param_5487, enum_137 param_5488)
+	public bool Solution_method_1948(On.Solution.orig_method_1948 orig,
+		Solution solution_self,
+		Part part,
+		HexIndex hex1,
+		HexIndex hex2,
+		HexRotation rot,
+		out string errorMessage)
 	{
-		if (disableOverlapDetection)
+		if (ignorePartPlacementRestrictions)
 		{
-			return new HashSet<HexIndex>();
+			errorMessage = null;
+			return true;
 		}
 		else
 		{
-			return orig(solution_self, param_5487, param_5488);
+			bool ret = orig(solution_self, part, hex1, hex2, rot, out errorMessage);
+			return ret;
 		}
-	}
-
-
-	public static Maybe<Sim> Sim_method_1824(On.Sim.orig_method_1824 orig, SolutionEditorBase param_5365)
-	{
-		var maybeRet = orig(param_5365);
-		if (!disableOverlapDetection || !maybeRet.method_1085())
-		{
-			return maybeRet;
-		}
-
-		var ret = maybeRet.method_1087();
-		//method_1947 was disabled, so we need to add some area hexes manually
-		HashSet<HexIndex> hashSet = new();
-		//hashSet = param_5365.method_502().method_1947((Maybe<Part>)struct_18.field_1431, (enum_137)0)
-		{
-			HashSet<HexIndex> hexIndexSet1 = new HashSet<HexIndex>();
-			var THIS = param_5365.method_502();
-			foreach (Part part in THIS.field_3919)
-			{
-				if ((Maybe<Part>)part != (Maybe<Part>)struct_18.field_1431)
-				{
-					HashSet<HexIndex> hexIndexSet2 = part.method_1187(THIS, (enum_137)0, part.method_1161(), part.method_1163());
-					hexIndexSet1.UnionWith((IEnumerable<HexIndex>)hexIndexSet2);
-				}
-			}
-			hashSet = hexIndexSet1;
-		}
-		foreach (HexIndex hexIndex in hashSet)
-		{
-			ret.field_3824.Add(hexIndex);
-		}
-
-		return ret;
 	}
 }
