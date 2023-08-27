@@ -45,8 +45,8 @@ public static class Navigation
 		}
 	}
 
-	public static void SEPP_method_221(SolutionEditorProgramPanel sepp_self)
-	{
+	//public static void SEPP_method_221(SolutionEditorProgramPanel sepp_self)
+	//{
 		/*
 		var seppDyn = new DynamicData(sepp_self);
 		SolutionEditorScreen ses = seppDyn.Get<SolutionEditorScreen>("field_2007");
@@ -77,7 +77,7 @@ public static class Navigation
 			}
 		}
 		*/
-	}
+	//}
 
 
 	public static void LoadPuzzleContent()

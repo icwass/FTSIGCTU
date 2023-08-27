@@ -22,8 +22,6 @@ namespace FTSIGCTU;
 
 public class MainClass : QuintessentialMod
 {
-
-
 	public static bool ignorePartPlacementRestrictions = false;
 	
 	public override Type SettingsType => typeof(MySettings);
@@ -93,7 +91,7 @@ public class MainClass : QuintessentialMod
 		MirrorTool.LoadPuzzleContent();
 		Miscellaneous.LoadPuzzleContent();
 		AreaDisplay.LoadPuzzleContent();
-		DebugParts.LoadPuzzleContent();
+		//DebugParts.LoadPuzzleContent();
 		MetricDisplay.LoadPuzzleContent();
 		Navigation.LoadPuzzleContent();
 	}
@@ -133,7 +131,7 @@ public class MainClass : QuintessentialMod
 		ConduitEditor.SolutionEditorScreen_method_50(SES_self);
 		MirrorTool.SolutionEditorScreen_method_50(SES_self);
 		InstructionEditor.SolutionEditorScreen_method_50(SES_self);
-		DebugParts.SolutionEditorScreen_method_50(SES_self);
+		//DebugParts.SolutionEditorScreen_method_50(SES_self);
 		Navigation.SolutionEditorScreen_method_50(SES_self);
 		orig(SES_self, param_5703);
 		TrackEditor.SolutionEditorScreen_method_50(SES_self);

@@ -38,9 +38,20 @@ public static class DebugParts
 	}
 
 	//---------------------------------------------------//
+	//public methods
+	public static void LoadPuzzleContent()
+	{
+		//
+
+
+
+
+	}
+
+	//---------------------------------------------------//
 	//internal helper methods
 
-	//Editor.method_927(keyValuePair.Value, vector2, 1f, 1f, 1f, 1f, -21f, num - 1.570796f, (class_256) null, (class_256) null, false); // draws atoms
+
 
 	//---------------------------------------------------//
 	//internal main methods
@@ -48,7 +59,7 @@ public static class DebugParts
 	//---------------------------------------------------//
 
 
-	public static void LoadPuzzleContent()
+	public static void oldLoadPuzzleContent()
 	{
 		//load textures
 
@@ -141,14 +152,6 @@ public static class DebugParts
 
 		//temporarily disabled, for now
 		//QApi.AddPartTypeToPanel(Expunction, PartTypes.field_1782);//inserts part type after equilibrium (near the bottom)
-
-
-
-
-
-
-
-
 
 		QApi.RunAfterCycle((sim_self, flag) =>
 		{

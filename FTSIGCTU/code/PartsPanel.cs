@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.Reflection;
 
 namespace FTSIGCTU;
-using Texture = class_256;
 
 public static class PartsPanel
 {
