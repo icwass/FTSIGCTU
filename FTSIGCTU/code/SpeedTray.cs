@@ -17,7 +17,7 @@ public static class SpeedTray
 	//data structs, enums, variables
 	private static float[] simspeed_factor = new float[6] { 0.1f, 0.25f, 1.0f, 4.0f, 10.0f, 100.0f };
 	private static int simspeed_index = 2; // index for 1.0f
-	private static Sound clickButton;
+	private static Sound clickButton => class_238.field_1991.field_1821;
 	private static Texture[] textures;
 	private static float speedtray_position_max = 72.0f;
 	private static float speedtray_position = speedtray_position_max; //between 0 (all the way out) and speedtray_position_max (hidden)
@@ -141,8 +141,6 @@ public static class SpeedTray
 	public static void LoadPuzzleContent()
 	{
 		//load resources for speed bar
-		clickButton = class_238.field_1991.field_1821; // 'sounds/click_button'
-
 		textures = new Texture[(int)resource.COUNT];
 		string path = "ftsigctu/textures/solution_editor/program_panel/";
 		textures[(int)resource.speed_tray] = class_235.method_615(path + "speed_tray");

@@ -44,6 +44,15 @@ public static class DebugParts
 		//
 
 
+		On.SolutionEditorPartsPanel.class_428.method_2047 += method2047_AddDebugTray;
+
+	}
+
+	public static void PostLoad()
+	{
+		//
+
+
 
 
 	}
@@ -55,6 +64,22 @@ public static class DebugParts
 
 	//---------------------------------------------------//
 	//internal main methods
+
+	private static void method2047_AddDebugTray(
+		On.SolutionEditorPartsPanel.class_428.orig_method_2047 orig,
+		SolutionEditorPartsPanel.class_428 class428_self,
+		string trayName,
+		List<PartTypeForToolbar> list)
+	{
+		orig(class428_self, trayName, list);
+		if (trayName != class_134.method_253("Glyphs", string.Empty)) return;
+
+		//append Debugging Tray
+		List<PartTypeForToolbar> toolbarList = new List<PartTypeForToolbar>();
+		toolbarList.Add(PartTypeForToolbar.method_1225(PartTypes.field_1781, true, true));
+
+		orig(class428_self, class_134.method_253("Debugging Tools", string.Empty), toolbarList);
+	}
 
 	//---------------------------------------------------//
 

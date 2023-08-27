@@ -90,8 +90,10 @@ public class MainClass : QuintessentialMod
 		InstructionEditor.LoadPuzzleContent();
 		MirrorTool.LoadPuzzleContent();
 		Miscellaneous.LoadPuzzleContent();
+		SpeedTray.LoadPuzzleContent();
+		PartsPanel.LoadPuzzleContent();
 		AreaDisplay.LoadPuzzleContent();
-		//DebugParts.LoadPuzzleContent();
+		DebugParts.LoadPuzzleContent();
 		MetricDisplay.LoadPuzzleContent();
 		Navigation.LoadPuzzleContent();
 	}
