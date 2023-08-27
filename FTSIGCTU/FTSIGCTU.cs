@@ -50,8 +50,10 @@ public class MainClass : QuintessentialMod
 		//need to put this somewhere
 		[SettingsLabel("Disable overlap detection and other part-placement restrictions.")]
 		public bool ignorePartPlacementRestrictions = false;
-		[SettingsLabel("Allow duplicate Disposals, Berlos, inputs and outputs.")]
-		public bool allowDuplicateParts = false;
+		[SettingsLabel("Ignore part allowances (i.e. permit multiple disposals, etc).")]
+		public bool ignorePartAllowances = false;
+		[SettingsLabel("Allow duplicate inputs and outputs.")]
+		public bool allowMultipleIO = false;
 		[SettingsLabel("Run the simulation even if the number of outputs is wrong.")]
 		public bool allowWrongNumberOfOutputs = false;
 		[SettingsLabel("Use 'Gold' instead of 'Cost' in the metric display.")]
@@ -71,7 +73,9 @@ public class MainClass : QuintessentialMod
 		TrackEditor.ApplySettings(SET.alsoReverseArms, SET.allowQuantumTracking);
 		ConduitEditor.ApplySettings(SET.allowConduitEditor);
 		InstructionEditor.ApplySettings(SET.drawBlanksOnProgrammingTray, SET.allowMultipleOverrides);
-		Miscellaneous.ApplySettings(SET.allowDuplicateParts, SET.speedtrayZoomtoolWorkaround, SET.allowWrongNumberOfOutputs);
+		Miscellaneous.ApplySettings(SET.allowWrongNumberOfOutputs);
+		SpeedTray.ApplySettings(SET.speedtrayZoomtoolWorkaround);
+		PartsPanel.ApplySettings(SET.ignorePartAllowances, SET.allowMultipleIO);
 		MetricDisplay.ApplySettings(SET.writeGoldNotCost);
 		Navigation.ApplySettings(SET.showCritelliOnMap);
 
@@ -114,7 +118,7 @@ public class MainClass : QuintessentialMod
 
 	public static float SES_Method_511(On.SolutionEditorScreen.orig_method_511 orig, SolutionEditorScreen SES_self)
 	{
-		return orig(SES_self) * Miscellaneous.SimSpeedFactor();
+		return orig(SES_self) * SpeedTray.SimSpeedFactor();
 	}
 
 	public void SolutionEditorProgramPanel_Method_221(On.SolutionEditorProgramPanel.orig_method_221 orig, SolutionEditorProgramPanel SEPP_self, float param_5658)
@@ -122,14 +126,13 @@ public class MainClass : QuintessentialMod
 		AreaDisplay.SEPP_method_221(SEPP_self);
 		orig(SEPP_self, param_5658);
 		MetricDisplay.SEPP_method_221(SEPP_self);
-		Miscellaneous.SEPP_method_221(SEPP_self);
+		SpeedTray.SEPP_method_221(SEPP_self);
 	}
 	public void SES_Method_50(On.SolutionEditorScreen.orig_method_50 orig, SolutionEditorScreen SES_self, float param_5703)
 	{
 		ConduitEditor.SolutionEditorScreen_method_50(SES_self);
 		MirrorTool.SolutionEditorScreen_method_50(SES_self);
 		InstructionEditor.SolutionEditorScreen_method_50(SES_self);
-		Miscellaneous.SolutionEditorScreen_method_50(SES_self);
 		DebugParts.SolutionEditorScreen_method_50(SES_self);
 		Navigation.SolutionEditorScreen_method_50(SES_self);
 		orig(SES_self, param_5703);
