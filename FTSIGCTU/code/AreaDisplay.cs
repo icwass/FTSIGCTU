@@ -12,12 +12,17 @@ using Texture = class_256;
 
 public static class AreaDisplay
 {
+	static bool PressedHeightKey() => MainClass.MySettings.Instance.displayEditingSettings.KeyShowHeight.Pressed();
+	static bool PressedWidthKey() => MainClass.MySettings.Instance.displayEditingSettings.KeyShowWidth.Pressed();
+	public static bool showHeightAndWidthSeparately = true;
+
 	//data structs, enums, variables
 	private static Texture[] textures;
 	private static Sound sound_toggle;
 
-	private static SDL.enum_160 heightKey = SDL.enum_160.SDLK_u;
-	private static SDL.enum_160 widthKey = SDL.enum_160.SDLK_i;
+
+	//private static SDL.enum_160 heightKey = SDL.enum_160.SDLK_u;
+	//private static SDL.enum_160 widthKey = SDL.enum_160.SDLK_i;
 	private static bool showHeight = false;
 	private static bool showWidth = false;
 
@@ -347,15 +352,15 @@ public static class AreaDisplay
 
 		bool simStopped = ses.method_503() == enum_128.Stopped;
 
-		if (Input.IsSdlKeyPressed(heightKey))
+		if (PressedHeightKey())
 		{
 			showHeight = !showHeight;
-			showWidth = false;
+			if (showHeightAndWidthSeparately) showWidth = false;
 			common.playSound(sound_toggle, 0.2f);
 		}
-		if (Input.IsSdlKeyPressed(widthKey))
+		if (PressedWidthKey())
 		{
-			showHeight = false;
+			if (showHeightAndWidthSeparately) showHeight = false;
 			showWidth = !showWidth;
 			common.playSound(sound_toggle, 0.2f);
 		}

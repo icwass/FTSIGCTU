@@ -15,6 +15,7 @@ public static class Navigation
 {
 	//data structs, enums, variables
 	public static bool showCritelliOnMap = true;
+	static bool PressedMapKey() => MainClass.MySettings.Instance.displayEditingSettings.KeyShowMap.Pressed();
 
 	//private static Vector2 screenPosition = new Vector2(0f, 0f);
 	//private static bool screenIsHoming = false;
@@ -33,7 +34,7 @@ public static class Navigation
 
 	public static void SolutionEditorScreen_method_50(SolutionEditorScreen SES_self)
 	{
-		if (Input.IsSdlKeyPressed(SDL.enum_160.SDLK_m))
+		if (PressedMapKey())
 		{
 			Sound ui_paper = class_238.field_1991.field_1874;
 			common.playSound(ui_paper);
@@ -302,7 +303,7 @@ public static class Navigation
 				Input.IsSdlKeyPressed(SDL.enum_160.SDLK_TAB)
 				|| Input.IsSdlKeyPressed(SDL.enum_160.SDLK_SPACE)
 				|| Input.IsSdlKeyPressed(SDL.enum_160.SDLK_ESCAPE)
-				|| Input.IsSdlKeyPressed(SDL.enum_160.SDLK_m)
+				|| PressedMapKey()
 			;
 			bool returnToEditor = returnToEditorKeypress;
 			Sound ui_paper_back = class_238.field_1991.field_1875;

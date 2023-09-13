@@ -46,6 +46,31 @@ public class MainClass : QuintessentialMod
 		}
 		*/
 
+		[SettingsLabel("Display Settings:")]
+		public bool enableDisplaySettings = false;
+		[SettingsLabel("")]
+		public DisplaySettings displayEditingSettings = new();
+		public class DisplaySettings : SettingsGroup
+		{
+			public override bool Enabled => Instance.enableDisplaySettings;
+
+			[SettingsLabel("Use thicker lines when highlighting hexes.")]
+			public bool drawThickHexes = false;
+			[SettingsLabel("Use 'Gold' instead of 'Cost' in the metric display.")]
+			public bool writeGoldNotCost = false;
+			[SettingsLabel("Show the origin on the navigation map.")]
+			public bool showCritelliOnMap = false;
+
+			[SettingsLabel("Do not show the height and width simultaneously.")]
+			public bool showHeightAndWidthSeparately = true;
+			[SettingsLabel("Show Height of Solution")]
+			public Keybinding KeyShowHeight = new() { Key = "U" };
+			[SettingsLabel("Show Width of Solution")]
+			public Keybinding KeyShowWidth = new() { Key = "I" };
+			[SettingsLabel("Open Map")]
+			public Keybinding KeyShowMap = new() { Key = "M" };
+		}
+
 		[SettingsLabel("Part-Placement Settings:")]
 		public bool enablePartPlacementSettings = false;
 		[SettingsLabel("")]
@@ -53,12 +78,10 @@ public class MainClass : QuintessentialMod
 		public class PartPlacementSettings : SettingsGroup
 		{
 			public override bool Enabled => Instance.enablePartPlacementSettings;
-
 			[SettingsLabel("Disable the overlap-related part-placement restriction.")]
 			public bool ignorePartOverlapPlacementRestrictions = false;
 			[SettingsLabel("Disable cabinet-related part-placement restrictions.")]
 			public bool ignoreCabinetPlacementRestrictions = false;
-
 			[SettingsLabel("Ignore part allowances (i.e. permit multiple disposals, etc).")]
 			public bool ignorePartAllowances = false;
 			[SettingsLabel("Allow duplicate inputs and outputs.")]
@@ -74,16 +97,10 @@ public class MainClass : QuintessentialMod
 		public class PartEditingSettings : SettingsGroup
 		{
 			public override bool Enabled => Instance.enablePartEditingSettings;
-
-			// track editing key
-
 			[SettingsLabel("When reversing a track, also reverse arms on the track.")]
 			public bool alsoReverseArms = true;
 			[SettingsLabel("Allow the creation of disjoint (i.e. 'quantum') tracks.")]
 			public bool allowQuantumTracking = false;
-
-			// conduit editing key
-			//ConduitEditor
 			[SettingsLabel("Let conduits be created, destroyed, and swapped around.")]
 			public bool allowConduitEditor = false;
 		}
@@ -95,21 +112,12 @@ public class MainClass : QuintessentialMod
 		public class MiscellaneousSettings : SettingsGroup
 		{
 			public override bool Enabled => Instance.enableMiscellaneousSettings;
-
-			[SettingsLabel("Use thicker lines when highlighting hexes.")]
-			public bool drawThickHexes = false;
-
 			[SettingsLabel("Show blank instruction sources in the programming tray.")]
 			public bool drawBlanksOnProgrammingTray = false;
 			[SettingsLabel("Allow multiple Period Override instructions.")]
 			public bool allowMultipleOverrides = false;
-
-			[SettingsLabel("Use 'Gold' instead of 'Cost' in the metric display.")]
-			public bool writeGoldNotCost = false;
 			[SettingsLabel("Change the speedtray for ZoomTool compatibility.")]
 			public bool speedtrayZoomtoolWorkaround = false;
-			[SettingsLabel("Show the origin on the navigation map.")]
-			public bool showCritelliOnMap = false;
 		}
 	}
 	public override void ApplySettings()
@@ -117,7 +125,9 @@ public class MainClass : QuintessentialMod
 		base.ApplySettings();
 
 		var SET = (MySettings)Settings;
-		common.drawThickHexes = SET.miscellaneousEditingSettings.drawThickHexes;
+		common.drawThickHexes = SET.displayEditingSettings.drawThickHexes;
+
+		AreaDisplay.showHeightAndWidthSeparately = SET.displayEditingSettings.showHeightAndWidthSeparately;
 
 		ConduitEditor.allowConduitEditor = SET.partEditingSettings.allowConduitEditor;
 
@@ -125,9 +135,9 @@ public class MainClass : QuintessentialMod
 
 		Miscellaneous.allowWrongNumberOfOutputs = SET.partPlacementSettings.allowWrongNumberOfOutputs;
 
-		MetricDisplay.writeGoldNotCost = SET.miscellaneousEditingSettings.writeGoldNotCost;
+		MetricDisplay.writeGoldNotCost = SET.displayEditingSettings.writeGoldNotCost;
 
-		Navigation.showCritelliOnMap = SET.miscellaneousEditingSettings.showCritelliOnMap;
+		Navigation.showCritelliOnMap = SET.displayEditingSettings.showCritelliOnMap;
 
 		PartsPanel.ignorePartAllowances = SET.partPlacementSettings.ignorePartAllowances;
 		PartsPanel.allowMultipleIO = SET.partPlacementSettings.allowMultipleIO;
