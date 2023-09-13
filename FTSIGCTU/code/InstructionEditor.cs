@@ -11,9 +11,10 @@ namespace FTSIGCTU;
 
 public static class InstructionEditor
 {
+	public static bool drawBlanksOnProgrammingTray = false;
+
 	private static IDetour hook_SolutionEditorProgramPanel_method_2064;
 	private static IDetour hook_EditableProgram_method_912;
-	private static bool drawBlanksOnProgrammingTray = false;
 	private static InstructionType repeatBlankInstruction;
 
 	//data structs, enums, variables

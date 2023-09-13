@@ -10,22 +10,24 @@ using System.Collections.Generic;
 using System.Reflection;
 
 namespace FTSIGCTU;
-using Texture = class_256;
+//using Texture = class_256;
 
 public static class Miscellaneous
 {
 	//data structs, enums, variables
 	public static bool allowWrongNumberOfOutputs = false;
+	public static bool ignorePartPlacementRestrictions = false;
 
 	//---------------------------------------------------//
 	//public methods
-	public static void ApplySettings(bool _allowWrongNumberOfOutputs)
-	{
-		allowWrongNumberOfOutputs = _allowWrongNumberOfOutputs;
-	}
 	public static void LoadPuzzleContent()
 	{
 		IL.SolutionEditorProgramPanel.method_221 += method_221_manipulateOutputCount;
+	}
+
+	public static void PostLoad()
+	{
+		On.Solution.method_1948 += Solution_method_1948;
 	}
 
 	//---------------------------------------------------//
@@ -58,5 +60,26 @@ public static class Miscellaneous
 			// returning puzzleCount will yield the original behavior
 			return allowWrongNumberOfOutputs ? boardCount : puzzleCount;
 		});
+	}
+
+
+	public static bool Solution_method_1948(On.Solution.orig_method_1948 orig,
+		Solution solution_self,
+		Part part,
+		HexIndex hex1,
+		HexIndex hex2,
+		HexRotation rot,
+		out string errorMessage)
+	{
+		if (ignorePartPlacementRestrictions)
+		{
+			errorMessage = null;
+			return true;
+		}
+		else
+		{
+			bool ret = orig(solution_self, part, hex1, hex2, rot, out errorMessage);
+			return ret;
+		}
 	}
 }

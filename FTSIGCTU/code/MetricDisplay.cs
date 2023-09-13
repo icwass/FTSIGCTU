@@ -14,9 +14,10 @@ using Texture = class_256;
 public static class MetricDisplay
 {
 	//data structs, enums, variables
+	public static bool writeGoldNotCost = false;
+
 	private static Texture metric_overlay;
 	private static bool displayAlternateMetrics;
-	private static bool writeGoldNotCost = false;
 
 	private enum resource : byte
 	{
@@ -174,8 +175,4 @@ public static class MetricDisplay
 	}
 
 	//---------------------------------------------------//
-	public static void ApplySettings(bool _writeGoldNotCost)
-	{
-		writeGoldNotCost = _writeGoldNotCost;
-	}
 }

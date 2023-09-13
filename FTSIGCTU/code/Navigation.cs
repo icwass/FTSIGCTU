@@ -14,7 +14,7 @@ using PartType = class_139;
 public static class Navigation
 {
 	//data structs, enums, variables
-	private static bool showCritelliOnMap = true;
+	public static bool showCritelliOnMap = true;
 
 	//private static Vector2 screenPosition = new Vector2(0f, 0f);
 	//private static bool screenIsHoming = false;
@@ -28,10 +28,6 @@ public static class Navigation
 
 	//---------------------------------------------------//
 	//internal main methods
-	public static void ApplySettings(bool _showCritelliOnMap)
-	{
-		showCritelliOnMap = _showCritelliOnMap;
-	}
 
 	//---------------------------------------------------//
 

@@ -15,6 +15,7 @@ public static class common
 {
 	//
 	public static bool drawThickHexes = false;
+
 	//---------------------------------------------------//
 	public static void playSound(Sound SOUND, float VOLUME = 1f)
 	{
@@ -272,8 +273,4 @@ public static class common
 		SES_self.method_2108();
 	}
 	//---------------------------------------------------//
-	public static void ApplySettings(bool _drawThickHexes)
-	{
-		drawThickHexes = _drawThickHexes;
-	}
 }

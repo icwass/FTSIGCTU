@@ -15,13 +15,15 @@ using Texture = class_256;
 public static class SpeedTray
 {
 	//data structs, enums, variables
+	public static bool speedtrayZoomtoolWorkaround = false;
+
 	private static float[] simspeed_factor = new float[6] { 0.1f, 0.25f, 1.0f, 4.0f, 10.0f, 100.0f };
 	private static int simspeed_index = 2; // index for 1.0f
 	private static Sound clickButton => class_238.field_1991.field_1821;
 	private static Texture[] textures;
 	private static float speedtray_position_max = 72.0f;
 	private static float speedtray_position = speedtray_position_max; //between 0 (all the way out) and speedtray_position_max (hidden)
-	private static bool speedtrayZoomtoolWorkaround = false;
+
 	private enum resource : byte
 	{
 		speed_tray,
@@ -33,11 +35,6 @@ public static class SpeedTray
 	}
 	//---------------------------------------------------//
 	//public methods
-	public static void ApplySettings(bool _speedtrayZoomtoolWorkaround)
-	{
-		speedtrayZoomtoolWorkaround = _speedtrayZoomtoolWorkaround;
-	}
-
 	public static float SimSpeedFactor() => simspeed_factor[simspeed_index];
 
 	//---------------------------------------------------//

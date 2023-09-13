@@ -13,8 +13,9 @@ using Texture = class_256;
 public static class TrackEditor
 {
 	//data structs, enums, variables
-	private static bool allowQuantumTracking = false;
-	private static bool alsoReverseArms = true;
+	public static bool allowQuantumTracking = false;
+	public static bool alsoReverseArms = true;
+
 	private static SDL.enum_160 editingKey = SDL.enum_160.SDLK_g;
 
 	private static editingModeType editingMode = editingModeType.none;
@@ -418,11 +419,6 @@ public static class TrackEditor
 		sounds[(int)resource.reverse] = class_238.field_1991.field_1854;// 'sounds/piece_modify'
 		sounds[(int)resource.disjoin] = class_238.field_1991.field_1857;// 'sounds/piece_remove'
 		sounds[(int)resource.pulse] = class_238.field_1991.field_1828;  //not used, 'sounds/code_failure'
-	}
-	public static void ApplySettings(bool _alsoReverseArms, bool _allowQuantumTracking)
-	{
-		alsoReverseArms = _alsoReverseArms;
-		allowQuantumTracking = _allowQuantumTracking;
 	}
 	//---------------------------------------------------//
 }

@@ -1,6 +1,4 @@
-﻿using Mono.Cecil.Cil;
-using MonoMod.Cil;
-using MonoMod.RuntimeDetour;
+﻿using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
 using Quintessential;
 using Quintessential.Settings;
@@ -22,8 +20,6 @@ namespace FTSIGCTU;
 
 public class MainClass : QuintessentialMod
 {
-	public static bool ignorePartPlacementRestrictions = false;
-	
 	public override Type SettingsType => typeof(MySettings);
 	public class MySettings
 	{
@@ -67,17 +63,26 @@ public class MainClass : QuintessentialMod
 		base.ApplySettings();
 
 		var SET = (MySettings)Settings;
-		common.ApplySettings(SET.drawThickHexes);
-		TrackEditor.ApplySettings(SET.alsoReverseArms, SET.allowQuantumTracking);
-		ConduitEditor.ApplySettings(SET.allowConduitEditor);
-		InstructionEditor.ApplySettings(SET.drawBlanksOnProgrammingTray, SET.allowMultipleOverrides);
-		Miscellaneous.ApplySettings(SET.allowWrongNumberOfOutputs);
-		SpeedTray.ApplySettings(SET.speedtrayZoomtoolWorkaround);
-		PartsPanel.ApplySettings(SET.ignorePartAllowances, SET.allowMultipleIO);
-		MetricDisplay.ApplySettings(SET.writeGoldNotCost);
-		Navigation.ApplySettings(SET.showCritelliOnMap);
+		common.drawThickHexes = SET.drawThickHexes;
 
-		ignorePartPlacementRestrictions = SET.ignorePartPlacementRestrictions;
+		ConduitEditor.allowConduitEditor = SET.allowConduitEditor;
+
+		InstructionEditor.ApplySettings(SET.drawBlanksOnProgrammingTray, SET.allowMultipleOverrides);
+
+		Miscellaneous.allowWrongNumberOfOutputs = SET.allowWrongNumberOfOutputs;
+		Miscellaneous.ignorePartPlacementRestrictions = SET.ignorePartPlacementRestrictions;
+
+		MetricDisplay.writeGoldNotCost = SET.writeGoldNotCost;
+
+		Navigation.showCritelliOnMap = SET.showCritelliOnMap;
+
+		PartsPanel.ignorePartAllowances = SET.ignorePartAllowances;
+		PartsPanel.allowMultipleIO = SET.allowMultipleIO;
+
+		SpeedTray.speedtrayZoomtoolWorkaround = SET.speedtrayZoomtoolWorkaround;
+
+		TrackEditor.alsoReverseArms = SET.alsoReverseArms;
+		TrackEditor.allowQuantumTracking = SET.allowQuantumTracking;
 	}
 	public override void Load()
 	{
@@ -109,11 +114,11 @@ public class MainClass : QuintessentialMod
 		On.SolutionEditorScreen.method_50 += SES_Method_50;
 		On.class_153.method_221 += c153_Method_221;
 
-		On.Solution.method_1948 += Solution_method_1948;
-		IL.class_114.method_0 += class114_method_0_drawTrackAnywhere;
 		On.SolutionEditorProgramPanel.method_221 += SolutionEditorProgramPanel_Method_221;
 
 		On.SolutionEditorScreen.method_511 += SES_Method_511;
+
+		Miscellaneous.PostLoad();
 	}
 
 	public static float SES_Method_511(On.SolutionEditorScreen.orig_method_511 orig, SolutionEditorScreen SES_self)
@@ -143,52 +148,5 @@ public class MainClass : QuintessentialMod
 		orig(c153_self, param_3616);
 		TrackEditor.class153_method_221(c153_self);
 		AreaDisplay.c153_method_221(c153_self);
-	}
-
-	public bool Solution_method_1948(On.Solution.orig_method_1948 orig,
-		Solution solution_self,
-		Part part,
-		HexIndex hex1,
-		HexIndex hex2,
-		HexRotation rot,
-		out string errorMessage)
-	{
-		if (ignorePartPlacementRestrictions)
-		{
-			errorMessage = null;
-			return true;
-		}
-		else
-		{
-			bool ret = orig(solution_self, part, hex1, hex2, rot, out errorMessage);
-			return ret;
-		}
-	}
-
-	public static void class114_method_0_drawTrackAnywhere(ILContext il)
-	{
-		bool maybeReplaceBool(bool flag) => !ignorePartPlacementRestrictions && flag;
-		ILCursor cursor = new ILCursor(il);
-		// skip ahead to roughly where the first check before "Parts cannot be placed here" begins
-		cursor.Goto(75);
-
-		// jump ahead to just before we store a boolean result in a local variable
-		if (!cursor.TryGotoNext(MoveType.Before, instr => instr.Match(OpCodes.Stloc_S))) return;
-
-		// maybe replace that boolean
-		cursor.EmitDelegate(maybeReplaceBool);
-
-		// jump to just AFTER we store the boolean result in a local variable
-		if (!cursor.TryGotoNext(MoveType.After, instr => instr.Match(OpCodes.Stloc_S))) return;
-
-		// maybe replace that boolean again
-		cursor.EmitDelegate(maybeReplaceBool);
-
-		// repeat the whole process, but for the second group of checks
-		cursor.Goto(186);
-		if (!cursor.TryGotoNext(MoveType.Before, instr => instr.Match(OpCodes.Stloc_S))) return;
-		cursor.EmitDelegate(maybeReplaceBool);
-		if (!cursor.TryGotoNext(MoveType.After, instr => instr.Match(OpCodes.Stloc_S))) return;
-		cursor.EmitDelegate(maybeReplaceBool);
 	}
 }

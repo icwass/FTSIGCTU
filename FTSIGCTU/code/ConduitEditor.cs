@@ -12,7 +12,8 @@ namespace FTSIGCTU;
 public static class ConduitEditor
 {
 	//data structs, enums, variables
-	private static bool allowConduitEditor = false;
+	public static bool allowConduitEditor = false;
+
 	private static SDL.enum_160 editingKey = SDL.enum_160.SDLK_g;
 
 	private static Sound[] sounds;
@@ -145,10 +146,6 @@ public static class ConduitEditor
 		sounds[(int)resource.create] = class_238.field_1991.field_1841; // 'sounds/glyph_dispersion'
 		sounds[(int)resource.destroy] = class_238.field_1991.field_1842;// 'sounds/glyph_disposal'
 		sounds[(int)resource.swap] = class_238.field_1991.field_1852;// 'sounds/instruction_place'
-	}
-	public static void ApplySettings(bool _allowConduitEditor)
-	{
-		allowConduitEditor = _allowConduitEditor;
 	}
 	//---------------------------------------------------//
 }

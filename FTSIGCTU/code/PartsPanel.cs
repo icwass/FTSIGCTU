@@ -14,16 +14,11 @@ namespace FTSIGCTU;
 public static class PartsPanel
 {
 	//data structs, enums, variables
-	private static bool ignorePartAllowances = false;
-	private static bool allowMultipleIO = false;
+	public static bool ignorePartAllowances = false;
+	public static bool allowMultipleIO = false;
 
 	//---------------------------------------------------//
 	//public methods
-	public static void ApplySettings(bool _ignorePartAllowances, bool _allowMultipleIO)
-	{
-		ignorePartAllowances = _ignorePartAllowances;
-		allowMultipleIO = _allowMultipleIO;
-	}
 	public static void LoadPuzzleContent()
 	{
 		On.PartTypeForToolbar.method_1225 += method_1225_ignorePartAllowances;
