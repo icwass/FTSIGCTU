@@ -42,8 +42,12 @@ public class MainClass : QuintessentialMod
 		public bool allowMultipleOverrides = false;
 
 		//need to put this somewhere
-		[SettingsLabel("Disable overlap detection and other part-placement restrictions.")]
-		public bool ignorePartPlacementRestrictions = false;
+		[SettingsLabel("Disable the overlap-related part-placement restriction.")]
+		public bool ignorePartOverlapPlacementRestrictions = false;
+		[SettingsLabel("Disable cabinet-related part-placement restrictions.")]
+		public bool ignoreCabinetPlacementRestrictions = false;
+
+
 		[SettingsLabel("Ignore part allowances (i.e. permit multiple disposals, etc).")]
 		public bool ignorePartAllowances = false;
 		[SettingsLabel("Allow duplicate inputs and outputs.")]
@@ -70,7 +74,6 @@ public class MainClass : QuintessentialMod
 		InstructionEditor.ApplySettings(SET.drawBlanksOnProgrammingTray, SET.allowMultipleOverrides);
 
 		Miscellaneous.allowWrongNumberOfOutputs = SET.allowWrongNumberOfOutputs;
-		Miscellaneous.ignorePartPlacementRestrictions = SET.ignorePartPlacementRestrictions;
 
 		MetricDisplay.writeGoldNotCost = SET.writeGoldNotCost;
 
@@ -78,6 +81,9 @@ public class MainClass : QuintessentialMod
 
 		PartsPanel.ignorePartAllowances = SET.ignorePartAllowances;
 		PartsPanel.allowMultipleIO = SET.allowMultipleIO;
+
+		PartPlacement.ignorePartOverlapPlacementRestrictions = SET.ignorePartOverlapPlacementRestrictions;
+		PartPlacement.ignoreCabinetPlacementRestrictions = SET.ignoreCabinetPlacementRestrictions;
 
 		SpeedTray.speedtrayZoomtoolWorkaround = SET.speedtrayZoomtoolWorkaround;
 
@@ -118,7 +124,7 @@ public class MainClass : QuintessentialMod
 
 		On.SolutionEditorScreen.method_511 += SES_Method_511;
 
-		Miscellaneous.PostLoad();
+		PartPlacement.PostLoad();
 	}
 
 	public static float SES_Method_511(On.SolutionEditorScreen.orig_method_511 orig, SolutionEditorScreen SES_self)
