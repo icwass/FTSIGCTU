@@ -21,77 +21,128 @@ namespace FTSIGCTU;
 public class MainClass : QuintessentialMod
 {
 	public override Type SettingsType => typeof(MySettings);
+
+	public static QuintessentialMod MainClassAsMod;
+
+
 	public class MySettings
 	{
-		//common
-		[SettingsLabel("Use thicker lines when highlighting hexes.")]
-		public bool drawThickHexes = false;
+		public static MySettings Instance => MainClassAsMod.Settings as MySettings;
 
-		//TrackEditor
-		[SettingsLabel("When reversing a track, also reverse arms on the track.")]
-		public bool alsoReverseArms = true;
-		[SettingsLabel("Allow the creation of disjoint (i.e. 'quantum') tracks.")]
-		public bool allowQuantumTracking = false;
-		//ConduitEditor
-		[SettingsLabel("Allow conduits to be created, destroyed, and swapped around.")]
-		public bool allowConduitEditor = false;
-		//InstructionEditor
-		[SettingsLabel("Show blank instruction sources in the programming tray.")]
-		public bool drawBlanksOnProgrammingTray = false;
-		[SettingsLabel("Allow multiple Period Override instructions.")]
-		public bool allowMultipleOverrides = false;
+		/*
+		[SettingsLabel("Enable Campaign Switcher")]
+		public bool EnableCustomCampaigns = true;
+		[SettingsLabel("Campaign Switcher Options:")]
+		public CampaignSwitcherSettings SwitcherSettings = new();
+		public class CampaignSwitcherSettings : SettingsGroup
+		{
+			public override bool Enabled => Instance.EnableCustomCampaigns;
 
-		//need to put this somewhere
-		[SettingsLabel("Disable the overlap-related part-placement restriction.")]
-		public bool ignorePartOverlapPlacementRestrictions = false;
-		[SettingsLabel("Disable cabinet-related part-placement restrictions.")]
-		public bool ignoreCabinetPlacementRestrictions = false;
+			[SettingsLabel("Switch Campaign Left")]
+			public Keybinding SwitchCampaignLeft = new() { Key = "K", Control = true };
 
+			[SettingsLabel("Switch Campaign Right")]
+			public Keybinding SwitchCampaignRight = new() { Key = "L", Control = true };
+		}
+		*/
 
-		[SettingsLabel("Ignore part allowances (i.e. permit multiple disposals, etc).")]
-		public bool ignorePartAllowances = false;
-		[SettingsLabel("Allow duplicate inputs and outputs.")]
-		public bool allowMultipleIO = false;
-		[SettingsLabel("Run the simulation even if the number of outputs is wrong.")]
-		public bool allowWrongNumberOfOutputs = false;
-		[SettingsLabel("Use 'Gold' instead of 'Cost' in the metric display.")]
-		public bool writeGoldNotCost = false;
-		[SettingsLabel("Change the speedtray for ZoomTool compatibility.")]
-		public bool speedtrayZoomtoolWorkaround = false;
-		[SettingsLabel("Show the origin on the navigation map.")]
-		public bool showCritelliOnMap = false;
+		[SettingsLabel("Part-Placement Settings:")]
+		public bool enablePartPlacementSettings = false;
+		[SettingsLabel("")]
+		public PartPlacementSettings partPlacementSettings = new();
+		public class PartPlacementSettings : SettingsGroup
+		{
+			public override bool Enabled => Instance.enablePartPlacementSettings;
 
+			[SettingsLabel("Disable the overlap-related part-placement restriction.")]
+			public bool ignorePartOverlapPlacementRestrictions = false;
+			[SettingsLabel("Disable cabinet-related part-placement restrictions.")]
+			public bool ignoreCabinetPlacementRestrictions = false;
+
+			[SettingsLabel("Ignore part allowances (i.e. permit multiple disposals, etc).")]
+			public bool ignorePartAllowances = false;
+			[SettingsLabel("Allow duplicate inputs and outputs.")]
+			public bool allowMultipleIO = false;
+			[SettingsLabel("Run simulations with the wrong number of outputs.")]
+			public bool allowWrongNumberOfOutputs = false;
+		}
+
+		[SettingsLabel("Part-Editing Settings:")]
+		public bool enablePartEditingSettings = false;
+		[SettingsLabel("")]
+		public PartEditingSettings partEditingSettings = new();
+		public class PartEditingSettings : SettingsGroup
+		{
+			public override bool Enabled => Instance.enablePartEditingSettings;
+
+			// track editing key
+
+			[SettingsLabel("When reversing a track, also reverse arms on the track.")]
+			public bool alsoReverseArms = true;
+			[SettingsLabel("Allow the creation of disjoint (i.e. 'quantum') tracks.")]
+			public bool allowQuantumTracking = false;
+
+			// conduit editing key
+			//ConduitEditor
+			[SettingsLabel("Let conduits be created, destroyed, and swapped around.")]
+			public bool allowConduitEditor = false;
+		}
+
+		[SettingsLabel("Miscellaneous Settings:")]
+		public bool enableMiscellaneousSettings = false;
+		[SettingsLabel("")]
+		public MiscellaneousSettings miscellaneousEditingSettings = new();
+		public class MiscellaneousSettings : SettingsGroup
+		{
+			public override bool Enabled => Instance.enableMiscellaneousSettings;
+
+			[SettingsLabel("Use thicker lines when highlighting hexes.")]
+			public bool drawThickHexes = false;
+
+			[SettingsLabel("Show blank instruction sources in the programming tray.")]
+			public bool drawBlanksOnProgrammingTray = false;
+			[SettingsLabel("Allow multiple Period Override instructions.")]
+			public bool allowMultipleOverrides = false;
+
+			[SettingsLabel("Use 'Gold' instead of 'Cost' in the metric display.")]
+			public bool writeGoldNotCost = false;
+			[SettingsLabel("Change the speedtray for ZoomTool compatibility.")]
+			public bool speedtrayZoomtoolWorkaround = false;
+			[SettingsLabel("Show the origin on the navigation map.")]
+			public bool showCritelliOnMap = false;
+		}
 	}
 	public override void ApplySettings()
 	{
 		base.ApplySettings();
 
 		var SET = (MySettings)Settings;
-		common.drawThickHexes = SET.drawThickHexes;
+		common.drawThickHexes = SET.miscellaneousEditingSettings.drawThickHexes;
 
-		ConduitEditor.allowConduitEditor = SET.allowConduitEditor;
+		ConduitEditor.allowConduitEditor = SET.partEditingSettings.allowConduitEditor;
 
-		InstructionEditor.ApplySettings(SET.drawBlanksOnProgrammingTray, SET.allowMultipleOverrides);
+		InstructionEditor.ApplySettings(SET.miscellaneousEditingSettings.drawBlanksOnProgrammingTray, SET.miscellaneousEditingSettings.allowMultipleOverrides);
 
-		Miscellaneous.allowWrongNumberOfOutputs = SET.allowWrongNumberOfOutputs;
+		Miscellaneous.allowWrongNumberOfOutputs = SET.partPlacementSettings.allowWrongNumberOfOutputs;
 
-		MetricDisplay.writeGoldNotCost = SET.writeGoldNotCost;
+		MetricDisplay.writeGoldNotCost = SET.miscellaneousEditingSettings.writeGoldNotCost;
 
-		Navigation.showCritelliOnMap = SET.showCritelliOnMap;
+		Navigation.showCritelliOnMap = SET.miscellaneousEditingSettings.showCritelliOnMap;
 
-		PartsPanel.ignorePartAllowances = SET.ignorePartAllowances;
-		PartsPanel.allowMultipleIO = SET.allowMultipleIO;
+		PartsPanel.ignorePartAllowances = SET.partPlacementSettings.ignorePartAllowances;
+		PartsPanel.allowMultipleIO = SET.partPlacementSettings.allowMultipleIO;
 
-		PartPlacement.ignorePartOverlapPlacementRestrictions = SET.ignorePartOverlapPlacementRestrictions;
-		PartPlacement.ignoreCabinetPlacementRestrictions = SET.ignoreCabinetPlacementRestrictions;
+		PartPlacement.ignorePartOverlapPlacementRestrictions = SET.partPlacementSettings.ignorePartOverlapPlacementRestrictions;
+		PartPlacement.ignoreCabinetPlacementRestrictions = SET.partPlacementSettings.ignoreCabinetPlacementRestrictions;
 
-		SpeedTray.speedtrayZoomtoolWorkaround = SET.speedtrayZoomtoolWorkaround;
+		SpeedTray.speedtrayZoomtoolWorkaround = SET.miscellaneousEditingSettings.speedtrayZoomtoolWorkaround;
 
-		TrackEditor.alsoReverseArms = SET.alsoReverseArms;
-		TrackEditor.allowQuantumTracking = SET.allowQuantumTracking;
+		TrackEditor.alsoReverseArms = SET.partEditingSettings.alsoReverseArms;
+		TrackEditor.allowQuantumTracking = SET.partEditingSettings.allowQuantumTracking;
 	}
 	public override void Load()
 	{
+		MainClassAsMod = this;
 		Settings = new MySettings();
 	}
 	public override void LoadPuzzleContent()

@@ -2,7 +2,7 @@ Name: FTSIGCTU
 Version: 0.6.5
 Icon: "ftsigctu/mod_icon"
 Title: FTSIGCTU
-Desc: "\"Finally, This Setup Is Getting Close To Usable.\"\nAdds several quality-of-life features.\nFor info and controls, visit: https://github.com/icwass/FTSIGCTU/wiki"
+Desc: "\"Finally, This Setup Is Getting Close To Usable.\"\nAdds several quality-of-life features.\nhttps://github.com/icwass/FTSIGCTU/wiki\n "
 DLL: "FTSIGCTU/bin/Debug/net452/FTSIGCTU.dll"
 Dependencies:
 - Name: Quintessential
