@@ -73,7 +73,7 @@ public static class PartPlacement
 	public static Maybe<class_189> Solution_method_1952(On.Solution.orig_method_1952 orig, Solution solution_self, HexIndex hex)
 	{
 		var ret = orig(solution_self, hex);
-		if (ignorePartOverlapPlacementRestrictions
+		if (ignoreCabinetPlacementRestrictions
 			&& solution_self.method_1934().field_2779.method_99(out _)
 		)
 		{
