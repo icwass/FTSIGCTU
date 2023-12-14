@@ -21,7 +21,9 @@ public static class PartPlacement
 	{
 		On.Solution.method_1947 += Solution_method_1947;
 		On.Solution.method_1948 += Solution_method_1948;
-		On.Solution.method_1952 += Solution_method_1952;
+		Logger.Log("<Debug6>: \"Wait, you want me to... *not* patch the method_1952?\"");
+		Logger.Log("<Debug6>: \"... if you say so.\"");
+		//On.Solution.method_1952 += Solution_method_1952;
 	}
 
 	//---------------------------------------------------//

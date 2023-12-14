@@ -201,7 +201,7 @@ public static class TrackEditor
 			//for each segment of track, clone a new part
 			for (int i = 0; i < count; i++)
 			{
-				Part clone = common.clonePart(part);
+				Part clone = common.clonePart(SOLUTION, part);
 				common.setTrackList(clone, list.GetRange(heads[i], tails[i] - heads[i] + 1));
 				partList.Add(clone);
 			}

@@ -426,11 +426,6 @@ public static class MirrorTool
 	}
 	#endregion
 
-
-	//---------------------------------------------------//
-	//internal helper methods
-	private static PartType getDraggedPartType(PartDraggingInputMode.DraggedPart draggedPart) => common.getPartType(draggedPart.field_2722);
-
 	//---------------------------------------------------//
 	//internal main methods
 
@@ -457,10 +452,9 @@ public static class MirrorTool
 
 		foreach (var draggedPart in draggedParts)
 		{
-			PartType draggedPartType = getDraggedPartType(draggedPart);
 			var part = draggedPart.field_2722;
-			var clonedPart = common.clonePart(part);
-			var partType = getDraggedPartType(draggedPart);
+			var partType = common.getPartType(part);
+			var clonedPart = common.clonePart(SES_self.method_502(), part);
 
 			if (!mirrorRules.Keys.Contains(partType) || !mirrorRules[partType](SES_self, clonedPart, mirrorVert, cursorHex)) // can we mirror the part?
 			{

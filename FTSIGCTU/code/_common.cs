@@ -232,40 +232,9 @@ public static class common
 		dynPart.Set("field_2698", index);
 	}
 
-	public static Part clonePart(Part orig)
+	public static Part clonePart(Solution solution, Part part)
 	{
-		//based off method_1175
-		class_162.method_403(!orig.method_1171(), "Fixed parts cannot be cloned.");
-		Part part = new Part(orig.method_1159(), false);
-		var partDyn = new DynamicData(part);
-		partDyn.Set("field_2692", orig.method_1161());
-		partDyn.Set("field_2693", orig.method_1163());
-		partDyn.Set("field_2694", orig.method_1165());
-		part.field_2695 = (Maybe<Part>)struct_18.field_1431;
-		part.field_2697 = orig.field_2697.method_897();
-		partDyn.Set("field_2698", orig.method_1167());
-		partDyn.Set("field_2699", orig.method_1169());
-		part.field_2702 = orig.field_2702;
-		if (orig.method_1159().field_1542)
-		{
-			part.method_1194();
-			foreach (HexIndex hexIndex in new DynamicData(orig).Get<List<HexIndex>>("field_2700"))
-				part.method_1192(hexIndex);
-		}
-		if (orig.method_1159().field_1543)
-		{
-			part.field_2703 = orig.field_2703;
-			part.method_1204(new List<HexIndex>(orig.method_1173()));
-		}
-		//part.method_1200();
-		{
-			for (int index = 0; index < part.field_2696.Length; ++index)
-			{
-				var subPart = part.field_2696[index];
-				new DynamicData(subPart).Set("field_2692", Sim.class_284.method_230(part, index));
-			}
-		}
-		return part;
+		return part.method_1175(solution, (Maybe<Part>)struct_18.field_1431);
 	}
 
 	public static void addUndoHistoryCheckpoint(SolutionEditorScreen SES_self)
