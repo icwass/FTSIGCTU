@@ -116,6 +116,8 @@ public class MainClass : QuintessentialMod
 			public bool drawBlanksOnProgrammingTray = false;
 			[SettingsLabel("Allow multiple Period Override instructions.")]
 			public bool allowMultipleOverrides = false;
+			[SettingsLabel("Enable the Debugging Tools parts tray.")]
+			public bool enableDebugTray = false;
 			[SettingsLabel("Change the speedtray for ZoomTool compatibility.")]
 			public bool speedtrayZoomtoolWorkaround = false;
 		}
@@ -130,6 +132,8 @@ public class MainClass : QuintessentialMod
 		AreaDisplay.showHeightAndWidthSeparately = SET.displayEditingSettings.showHeightAndWidthSeparately;
 
 		ConduitEditor.allowConduitEditor = SET.partEditingSettings.allowConduitEditor;
+
+		DebugParts.enableDebugTray = SET.miscellaneousEditingSettings.enableDebugTray;
 
 		InstructionEditor.ApplySettings(SET.miscellaneousEditingSettings.drawBlanksOnProgrammingTray, SET.miscellaneousEditingSettings.allowMultipleOverrides);
 

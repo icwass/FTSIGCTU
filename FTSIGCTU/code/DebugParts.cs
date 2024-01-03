@@ -18,6 +18,8 @@ public static class DebugParts
 	//data structs, enums, variables
 	private static Texture[] textures;
 
+	public static bool enableDebugTray = false;
+
 	private static PartType Expunction;
 
 	const int flashStep = 100;
@@ -72,6 +74,7 @@ public static class DebugParts
 		List<PartTypeForToolbar> list)
 	{
 		orig(class428_self, trayName, list);
+		if (!enableDebugTray) return;
 		if (trayName != class_134.method_253("Glyphs", string.Empty)) return;
 
 		//append Debugging Tray
