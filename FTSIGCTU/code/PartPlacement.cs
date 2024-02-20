@@ -14,6 +14,7 @@ public static class PartPlacement
 	//data structs, enums, variables
 	public static bool ignorePartOverlapPlacementRestrictions = false;
 	public static bool ignoreCabinetPlacementRestrictions = false;
+	public static bool allowTrackOverlapDragging = true;
 
 	//---------------------------------------------------//
 	//public methods
@@ -41,7 +42,7 @@ public static class PartPlacement
 		var ret = orig(solution_self, maybePart, enum137);
 		if (enum137 == (enum_137)2
 			&& !maybePart.method_1085()
-			&& ignorePartOverlapPlacementRestrictions
+			&& allowTrackOverlapDragging
 		)
 		{
 			ret = new HashSet<HexIndex>();

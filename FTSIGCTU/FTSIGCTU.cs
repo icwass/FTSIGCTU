@@ -80,6 +80,8 @@ public class MainClass : QuintessentialMod
 			public override bool Enabled => Instance.enablePartPlacementSettings;
 			[SettingsLabel("Disable the overlap-related part-placement restriction.")]
 			public bool ignorePartOverlapPlacementRestrictions = false;
+			[SettingsLabel("Allow track to overlap other parts (or itself) when dragging.")]
+			public bool allowTrackOverlapDragging = false;
 			[SettingsLabel("Disable cabinet-related part-placement restrictions.")]
 			public bool ignoreCabinetPlacementRestrictions = false;
 			[SettingsLabel("Ignore part allowances (i.e. permit multiple disposals, etc).")]
@@ -147,6 +149,7 @@ public class MainClass : QuintessentialMod
 		PartsPanel.allowMultipleIO = SET.partPlacementSettings.allowMultipleIO;
 
 		PartPlacement.ignorePartOverlapPlacementRestrictions = SET.partPlacementSettings.ignorePartOverlapPlacementRestrictions;
+		PartPlacement.allowTrackOverlapDragging = SET.partPlacementSettings.allowTrackOverlapDragging;
 		PartPlacement.ignoreCabinetPlacementRestrictions = SET.partPlacementSettings.ignoreCabinetPlacementRestrictions;
 
 		SpeedTray.speedtrayZoomtoolWorkaround = SET.miscellaneousEditingSettings.speedtrayZoomtoolWorkaround;
