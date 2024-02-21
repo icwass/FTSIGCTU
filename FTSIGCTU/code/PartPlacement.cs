@@ -22,9 +22,7 @@ public static class PartPlacement
 	{
 		On.Solution.method_1947 += Solution_method_1947;
 		On.Solution.method_1948 += Solution_method_1948;
-		Logger.Log("<Debug6>: \"Wait, you want me to... *not* patch the method_1952?\"");
-		Logger.Log("<Debug6>: \"... if you say so.\"");
-		//On.Solution.method_1952 += Solution_method_1952;
+		On.Solution.method_1952 += Solution_method_1952;
 	}
 
 	//---------------------------------------------------//
@@ -75,13 +73,68 @@ public static class PartPlacement
 	}
 	public static Maybe<class_189> Solution_method_1952(On.Solution.orig_method_1952 orig, Solution solution_self, HexIndex hex)
 	{
-		var ret = orig(solution_self, hex);
-		if (ignoreCabinetPlacementRestrictions
-			&& solution_self.method_1934().field_2779.method_99(out _)
-		)
+		//DEBUG: try-catch, just in case we still have problems
+		Maybe<class_189> ret = (Maybe<class_189>) struct_18.field_1431;
+		try
 		{
-			ret = (Maybe<class_189>) new class_189(0, 0, new class_183());
+			ret = orig(solution_self, hex);
 		}
-		return ret;
+		catch
+		{
+			Logger.Log("");
+			Logger.Log("[Solution_method_1952] Failed to execute \"ret = orig(solution_self, hex);\"");
+			Logger.Log("<Anataeus> Good lord, the original function failed to work! How come?");
+			Logger.Log("<Henley> The hexIndex seems fine - look, it's equal to (" + hex.Q + ", " + hex.R + ").");
+			Logger.Log("<Anataeus> That just leaves the solution_self object - here, take a look inside.");
+
+			if (solution_self == null)
+			{
+				Logger.Log("<Henley> There's nothing in there at all. Nothing!");
+				Logger.Log("<Anataeus> Oh hell.");
+				throw;
+			}
+
+			Logger.Log("<Henley> Oh, there's seems to be a solution of some sort in there. I'll try to pull it out.");
+			Logger.Log("<Anataeus> It's labeled \"" + solution_self.field_3915 + "\", curious. And it makes...");
+			Logger.Log("<Anataeus> It makes \"" + solution_self.method_1934().field_2766 + "\", apparently. Puzzling.");
+			Logger.Log("<Henley> Wait, so then the problem was the original function call?");
+			Logger.Log("<Anataeus> Oh hell.");
+			throw;
+		}
+
+
+		try
+		{
+			if (ignoreCabinetPlacementRestrictions
+				&& !ret.method_1085()
+				&& solution_self.method_1934().field_2779.method_99(out _)
+			)
+			{
+				ret = (Maybe<class_189>)new class_189(0, 0, Puzzles.field_2926);
+			}
+			return ret;
+		}
+		catch
+		{
+			Logger.Log("");
+			Logger.Log("[Solution_method_1952] Failed to run the return block.");
+			Logger.Log("<Anataeus> Good lord, why?!");
+			Logger.Log("<Henley> If it made it past the original function call, then the solution_self should be fine.");
+			Logger.Log("<Anataeus> Maybe not? Here, take a look inside.");
+
+			if (solution_self == null)
+			{
+				Logger.Log("<Henley> There's nothing in there at all! Nothing!!");
+				Logger.Log("<Anataeus> Oh hell.");
+				throw;
+			}
+
+			Logger.Log("<Henley> Yep, there's the solution, plain as day.");
+			Logger.Log("<Anataeus> And it's labeled \"" + solution_self.field_3915 + "\", apparently. And it makes...");
+			Logger.Log("<Anataeus> Ah, it makes \"" + solution_self.method_1934().field_2766 + "\". Delightful.");
+			Logger.Log("<Henley> Wait, so what caused the problem?");
+			Logger.Log("<Anataeus> Oh hell.");
+			throw;
+		}
 	}
 }
