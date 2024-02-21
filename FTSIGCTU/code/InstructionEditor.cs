@@ -110,6 +110,9 @@ public static class InstructionEditor
 			return;
 		}
 
+		// clear the instruction selection, if applicable
+		SES_self.field_4012.method_367();
+
 		//interfaceDyn.Set("field_2010", part); // not needed?
 		common.playSound(class_238.field_1991.field_1852, 0.2f);  // 'sounds/instruction_place'
 	}
