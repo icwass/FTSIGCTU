@@ -107,6 +107,19 @@ public class MainClass : QuintessentialMod
 			public bool allowConduitEditor = false;
 		}
 
+		[SettingsLabel("Instruction-Editing Settings:")]
+		public bool enableInstructionEditingSettings = false;
+		[SettingsLabel("")]
+		public TapeEditingSettings instructionEditingSettings = new();
+		public class TapeEditingSettings : SettingsGroup
+		{
+			public override bool Enabled => Instance.enableInstructionEditingSettings;
+			[SettingsLabel("Show blank instruction sources in the programming tray.")]
+			public bool drawBlanksOnProgrammingTray = false;
+			[SettingsLabel("Allow multiple Period Override instructions.")]
+			public bool allowMultipleOverrides = false;
+		}
+
 		[SettingsLabel("Miscellaneous Settings:")]
 		public bool enableMiscellaneousSettings = false;
 		[SettingsLabel("")]
@@ -114,10 +127,6 @@ public class MainClass : QuintessentialMod
 		public class MiscellaneousSettings : SettingsGroup
 		{
 			public override bool Enabled => Instance.enableMiscellaneousSettings;
-			[SettingsLabel("Show blank instruction sources in the programming tray.")]
-			public bool drawBlanksOnProgrammingTray = false;
-			[SettingsLabel("Allow multiple Period Override instructions.")]
-			public bool allowMultipleOverrides = false;
 			[SettingsLabel("Enable the Debugging Tools parts tray.")]
 			public bool enableDebugTray = false;
 			[SettingsLabel("Change the speedtray for ZoomTool compatibility.")]
@@ -137,7 +146,7 @@ public class MainClass : QuintessentialMod
 
 		DebugParts.enableDebugTray = SET.miscellaneousEditingSettings.enableDebugTray;
 
-		InstructionEditor.ApplySettings(SET.miscellaneousEditingSettings.drawBlanksOnProgrammingTray, SET.miscellaneousEditingSettings.allowMultipleOverrides);
+		InstructionEditor.ApplySettings(SET.instructionEditingSettings.drawBlanksOnProgrammingTray, SET.instructionEditingSettings.allowMultipleOverrides);
 
 		Miscellaneous.allowWrongNumberOfOutputs = SET.partPlacementSettings.allowWrongNumberOfOutputs;
 
