@@ -1,6 +1,7 @@
 ﻿using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
 using Quintessential;
+using Quintessential.Settings;
 using SDL2;
 using System;
 using System.Linq;
@@ -11,11 +12,17 @@ namespace FTSIGCTU;
 
 public static class InstructionEditor
 {
+	static bool PressedExpandKey() => false; // MainClass.MySettings.Instance.instructionEditingSettings.expandResetOrRepeat.Pressed(); /////////////////////////////////////////////////////// not ready yet
+	static bool PressedHighlightArmKey() => MainClass.MySettings.Instance.instructionEditingSettings.highlightInstructionsOnArm.Pressed();
+	static bool PressedUnhighlightArmKey() => MainClass.MySettings.Instance.instructionEditingSettings.unhighlightInstructionsOnArm.Pressed();
+
 	public static bool drawBlanksOnProgrammingTray = false;
 
 	private static IDetour hook_SolutionEditorProgramPanel_method_2064;
 	private static IDetour hook_EditableProgram_method_912;
-	private static InstructionType repeatBlankInstruction;
+	private static InstructionType repeatBlankInstructionType;
+
+	private static InstructionType overrideInstructionType => class_169.field_1652;
 
 	//data structs, enums, variables
 
@@ -72,49 +79,77 @@ public static class InstructionEditor
 		}
 		tapeDyn.Set("field_2415", newDict);
 	}
+	private static void expandHighlightedInstructions(SolutionEditorScreen SES, Part part)
+	{
+		throw new NotImplementedException("expanding resets/repeats has not been implemented yet");
+	}
 
 
 	//---------------------------------------------------//
 	public static void SolutionEditorScreen_method_50(SolutionEditorScreen SES_self)
 	{
 		var current_interface = SES_self.field_4010;
-		bool inInstructionRowMode = current_interface.GetType() == new class_249().GetType();
+		bool modeMovingInstructionRow = current_interface.GetType() == new class_249().GetType();
 		bool keyA = Input.IsSdlKeyPressed(SDL.enum_160.SDLK_a);
 		bool keyD = Input.IsSdlKeyPressed(SDL.enum_160.SDLK_d);
 		bool keyLBracket = Input.IsSdlKeyPressed(SDL.enum_160.SDLK_LEFTBRACKET);
 		bool keyRBracket = Input.IsSdlKeyPressed(SDL.enum_160.SDLK_RIGHTBRACKET);
 		bool keyShift = Input.IsShiftHeld();
 
-		// exit early if wrong mode
-		if (!inInstructionRowMode) return;
-
 		// time to do something!
 		var interfaceDyn = new DynamicData(current_interface);
 		var part = interfaceDyn.Get<Part>("field_2010");
 
-		if (keyA || keyD)
+		var highlightedInstructions = SES_self.field_4012;
+
+		void clearHighlightedInstructions() => highlightedInstructions.method_367();
+		void soundInstructionPlace() => common.playSound(class_238.field_1991.field_1852, 0.2f);  // 'sounds/instruction_place'
+		void soundInstructionPickup() => common.playSound(class_238.field_1991.field_1851,1f);
+
+		if (!modeMovingInstructionRow) return;
+
+		if (keyA || keyD || keyLBracket || keyRBracket || PressedExpandKey())
 		{
-			shiftInstructions(part, keyD, keyShift);
-		}
-		else if (keyLBracket)
-		{
-			squishInstructions(part);
-		}
-		else if (keyRBracket)
-		{
-			spreadInstructions(part);
-		}
-		else
-		{
-			//no inputs
-			return;
+			// misc instruction editing
+			if (keyA || keyD)
+			{
+				shiftInstructions(part, keyD, keyShift);
+			}
+			else if (keyLBracket)
+			{
+				squishInstructions(part);
+			}
+			else if (keyRBracket)
+			{
+				spreadInstructions(part);
+			}
+			else if (PressedExpandKey())
+			{
+				//expandHighlightedInstructions(SES_self, part); /////////////////////////////////////////////////////// not implemented yet
+			}
+
+			clearHighlightedInstructions();
+			soundInstructionPlace();
 		}
 
-		// clear the instruction selection, if applicable
-		SES_self.field_4012.method_367();
-
-		//interfaceDyn.Set("field_2010", part); // not needed?
-		common.playSound(class_238.field_1991.field_1852, 0.2f);  // 'sounds/instruction_place'
+		if (PressedHighlightArmKey())
+		{
+			foreach (struct_17 struct17 in part.field_2697.method_902())
+			{
+				// add instruction to highlights
+				highlightedInstructions.method_365(new struct_8(part, struct17.field_1421));
+			}
+			soundInstructionPlace();
+		}
+		else if (PressedUnhighlightArmKey())
+		{
+			foreach (struct_17 struct17 in part.field_2697.method_902())
+			{
+				// add instruction from highlights, if present
+				highlightedInstructions.method_366(new struct_8(part, struct17.field_1421));
+			}
+			soundInstructionPickup();
+		}
 	}
 
 	public static void LoadPuzzleContent()
@@ -136,7 +171,7 @@ public static class InstructionEditor
 
 		//the blank used inside repeat instructions
 		//copied from class_169.field_1654
-		repeatBlankInstruction = new InstructionType()
+		repeatBlankInstructionType = new InstructionType()
 		{
 			field_2542 = 'i',
 			field_2543 = class_134.method_254(string.Empty),
@@ -179,24 +214,21 @@ public static class InstructionEditor
 
 	private delegate void orig_SolutionEditorProgramPanel_method_2064(SolutionEditorProgramPanel sepp_self, InstructionType param_4881, Vector2 param_5660, Maybe<InstructionType> param_5661);
 	private delegate void orig_EditableProgram_method_912(class_188 param_4563, int param_4564);
-	private static void OnSolutionEditorProgramPanelMethod2064(orig_SolutionEditorProgramPanel_method_2064 orig, SolutionEditorProgramPanel sepp_self, InstructionType param_4881, Vector2 param_5660, Maybe<InstructionType> param_5661)
+	private static void OnSolutionEditorProgramPanelMethod2064(orig_SolutionEditorProgramPanel_method_2064 orig, SolutionEditorProgramPanel sepp_self, InstructionType instructionType, Vector2 position, Maybe<InstructionType> maybeInstructionType)
 	{
-		orig(sepp_self, param_4881, param_5660, param_5661);
+		orig(sepp_self, instructionType, position, maybeInstructionType);
 
 		//do the blank instructions right after the override instruction
-		float x = drawBlanksOnProgrammingTray ? 0f : -1000000f;
-		float y = drawBlanksOnProgrammingTray ? 0f : -1000000f;
-
-		if (param_4881 == class_169.field_1652)
+		if (drawBlanksOnProgrammingTray && instructionType == overrideInstructionType)
 		{
-			orig(sepp_self, class_169.field_1653, new Vector2(268f + x, 146f + y), param_5661);
-			orig(sepp_self, class_169.field_1654, new Vector2(268f + x, 199f + y), param_5661);
+			orig(sepp_self, class_169.field_1653, new Vector2(268f, 146f), maybeInstructionType);
+			orig(sepp_self, class_169.field_1654, new Vector2(268f, 199f), maybeInstructionType);
 		}
 	}
 	private static void OnEditableProgramMethod912(orig_EditableProgram_method_912 orig, class_188 param_4563, int param_4564)
 	{
 		var buffer = class_169.field_1654;
-		class_169.field_1654 = repeatBlankInstruction;
+		class_169.field_1654 = repeatBlankInstructionType;
 		/////////////////////////////
 		orig(param_4563, param_4564);
 		/////////////////////////////
@@ -216,6 +248,6 @@ public static class InstructionEditor
 		drawBlanksOnProgrammingTray = _drawBlanksOnProgrammingTray;
 
 		//decide whether more than one override can be placed
-		class_169.field_1652.field_2551 = !_allowMultipleOverrides;
+		overrideInstructionType.field_2551 = !_allowMultipleOverrides;
 	}
 }

@@ -118,6 +118,12 @@ public class MainClass : QuintessentialMod
 			public bool drawBlanksOnProgrammingTray = false;
 			[SettingsLabel("Allow multiple Period Override instructions.")]
 			public bool allowMultipleOverrides = false;
+			[SettingsLabel("Highlight arm's instructions")]
+			public Keybinding highlightInstructionsOnArm = new() { Key = "F" };
+			[SettingsLabel("Un-highlight arm's instructions")]
+			public Keybinding unhighlightInstructionsOnArm = new() { Key = "R" };
+			//[SettingsLabel("Expand Resets/Repeats")] /////////////////////////////////////////////////////// not ready yet
+			//public Keybinding expandResetOrRepeat = new() { Key = "X" };
 		}
 
 		[SettingsLabel("Miscellaneous Settings:")]
