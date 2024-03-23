@@ -20,6 +20,8 @@ namespace FTSIGCTU;
 
 public class MainClass : QuintessentialMod
 {
+	public static MethodInfo PublicMethod<T>(string method) => typeof(T).GetMethod(method, BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+	public static MethodInfo PrivateMethod<T>(string method) => typeof(T).GetMethod(method, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
 	public override Type SettingsType => typeof(MySettings);
 
 	public static QuintessentialMod MainClassAsMod;
@@ -122,8 +124,8 @@ public class MainClass : QuintessentialMod
 			public Keybinding highlightInstructionsOnArm = new() { Key = "F" };
 			[SettingsLabel("Un-highlight arm's instructions")]
 			public Keybinding unhighlightInstructionsOnArm = new() { Key = "R" };
-			//[SettingsLabel("Expand Resets/Repeats")] /////////////////////////////////////////////////////// not ready yet
-			//public Keybinding expandResetOrRepeat = new() { Key = "X" };
+			[SettingsLabel("Expand Resets/Repeats")]
+			public Keybinding expandResetOrRepeat = new() { Key = "X" };
 		}
 
 		[SettingsLabel("Miscellaneous Settings:")]

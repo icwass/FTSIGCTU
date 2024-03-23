@@ -10,19 +10,25 @@ using System.Reflection;
 
 namespace FTSIGCTU;
 
+using Texture = class_256;
+
 public static class InstructionEditor
 {
-	static bool PressedExpandKey() => false; // MainClass.MySettings.Instance.instructionEditingSettings.expandResetOrRepeat.Pressed(); /////////////////////////////////////////////////////// not ready yet
+	static bool PressedExpandKey() => MainClass.MySettings.Instance.instructionEditingSettings.expandResetOrRepeat.Pressed(); /////////////////////////////////////////////////////// not ready yet
 	static bool PressedHighlightArmKey() => MainClass.MySettings.Instance.instructionEditingSettings.highlightInstructionsOnArm.Pressed();
 	static bool PressedUnhighlightArmKey() => MainClass.MySettings.Instance.instructionEditingSettings.unhighlightInstructionsOnArm.Pressed();
 
 	public static bool drawBlanksOnProgrammingTray = false;
+
+	static class_154 highlightedInstructions(SolutionEditorScreen SES) => SES.field_4012;
 
 	private static IDetour hook_SolutionEditorProgramPanel_method_2064;
 	private static IDetour hook_EditableProgram_method_912;
 	private static InstructionType repeatBlankInstructionType;
 
 	private static InstructionType overrideInstructionType => class_169.field_1652;
+	private static InstructionType resetInstructionType => class_169.field_1665;
+	private static InstructionType repeatInstructionType => class_169.field_1666;
 
 	//data structs, enums, variables
 
@@ -79,9 +85,65 @@ public static class InstructionEditor
 		}
 		tapeDyn.Set("field_2415", newDict);
 	}
-	private static void expandHighlightedInstructions(SolutionEditorScreen SES, Part part)
+	private static bool tryToExpandHighlightedInstructionsInPart(SolutionEditorScreen SES, Part part)
 	{
-		throw new NotImplementedException("expanding resets/repeats has not been implemented yet");
+		var solution = SES.method_502();
+		var programmablePartsList = solution.method_1941();
+		if (!programmablePartsList.Contains(part)) return false;
+
+
+		var editableProgram = part.field_2697;
+
+		class_188 class188 = editableProgram.method_910(part, solution.method_1942(part));
+		var extentsDictionary = class188.field_1745;
+
+		Dictionary<int, InstructionType[]> instructionsToExpandDictionary = new();
+
+		// find instructions to expand - return early if expansion is not possible
+		foreach (KeyValuePair<int, class_14> kvp in extentsDictionary)
+		{
+			int instructionPosition = kvp.Key;
+			class_14 val = kvp.Value;
+			var instructionType = val.field_56;
+			var resultOfExpandingTheInstruction = val.field_57;
+
+			if (instructionType != resetInstructionType && instructionType != repeatInstructionType) continue;
+
+			instructionsToExpandDictionary[instructionPosition] = resultOfExpandingTheInstruction;
+
+			if (resultOfExpandingTheInstruction.Length > 1)
+			{
+				int length = resultOfExpandingTheInstruction.Length;
+				for (int i = 1; i < length; ++i)
+				{
+					if (extentsDictionary.ContainsKey(instructionPosition + i))
+					{
+						//expanding this instruction would overlap
+						//one instruction on top of another, so give up
+						return false;
+					}
+				}
+			}
+		}
+
+		// return early if there are no instructions to expand
+		if (instructionsToExpandDictionary.Count == 0) return false;
+
+		// otherwise, expansion is possible - time to get to work //////////////////////////////////////////////////////////////////////////
+		// (is there a built-in function for expanding resets/repeats? not sure - but if there is, i should just use that)
+		foreach (var kvp in instructionsToExpandDictionary)
+		{
+			int instructionPosition = kvp.Key;
+			var resultOfExpandingTheInstruction = kvp.Value;
+			var armProgramTape = new DynamicData(editableProgram).Get<SortedDictionary<int, InstructionType>>("field_2415");
+
+			for (int i = 0; i < resultOfExpandingTheInstruction.Length; i++)
+			{
+				var instructionType = resultOfExpandingTheInstruction[i];
+				if (instructionType != repeatBlankInstructionType) armProgramTape[i + instructionPosition] = instructionType;
+			}
+		}
+		return true;
 	}
 
 
@@ -100,11 +162,8 @@ public static class InstructionEditor
 		var interfaceDyn = new DynamicData(current_interface);
 		var part = interfaceDyn.Get<Part>("field_2010");
 
-		var highlightedInstructions = SES_self.field_4012;
-
-		void clearHighlightedInstructions() => highlightedInstructions.method_367();
+		void clearHighlightedInstructions() => highlightedInstructions(SES_self).method_367();
 		void soundInstructionPlace() => common.playSound(class_238.field_1991.field_1852, 0.2f);  // 'sounds/instruction_place'
-		void soundInstructionPickup() => common.playSound(class_238.field_1991.field_1851,1f);
 
 		if (!modeMovingInstructionRow) return;
 
@@ -125,7 +184,16 @@ public static class InstructionEditor
 			}
 			else if (PressedExpandKey())
 			{
-				//expandHighlightedInstructions(SES_self, part); /////////////////////////////////////////////////////// not implemented yet
+				if (tryToExpandHighlightedInstructionsInPart(SES_self, part))
+				{
+					// success! play success noise
+					common.playSound(class_238.field_1991.field_1877, 0.2f);  // 'sounds/ui_transition_back'
+				}
+				else
+				{
+					// failed to expand instructions - play fail noise
+					common.playSound(class_238.field_1991.field_1872, 0.2f);  // 'sounds/ui_modal'
+				}
 			}
 
 			clearHighlightedInstructions();
@@ -137,7 +205,7 @@ public static class InstructionEditor
 			foreach (struct_17 struct17 in part.field_2697.method_902())
 			{
 				// add instruction to highlights
-				highlightedInstructions.method_365(new struct_8(part, struct17.field_1421));
+				highlightedInstructions(SES_self).method_365(new struct_8(part, struct17.field_1421));
 			}
 			soundInstructionPlace();
 		}
@@ -146,9 +214,9 @@ public static class InstructionEditor
 			foreach (struct_17 struct17 in part.field_2697.method_902())
 			{
 				// add instruction from highlights, if present
-				highlightedInstructions.method_366(new struct_8(part, struct17.field_1421));
+				highlightedInstructions(SES_self).method_366(new struct_8(part, struct17.field_1421));
 			}
-			soundInstructionPickup();
+			common.playSound(class_238.field_1991.field_1851, 1f); // 'sounds/instruction_pickup'
 		}
 	}
 
