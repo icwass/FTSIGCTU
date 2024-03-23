@@ -89,17 +89,21 @@ public static class InstructionEditor
 	{
 		var solution = SES.method_502();
 		var programmablePartsList = solution.method_1941();
+		// not a programmable part? then nothing to do (though how the function got called, i don't know)
 		if (!programmablePartsList.Contains(part)) return false;
 
-
-		var editableProgram = part.field_2697;
-
-		class_188 class188 = editableProgram.method_910(part, solution.method_1942(part));
-		var extentsDictionary = class188.field_1745;
-
-		Dictionary<int, InstructionType[]> instructionsToExpandDictionary = new();
+		var highlighted_instructions = highlightedInstructions(SES);
+		var field1594 = new DynamicData(highlighted_instructions).Get<List<struct_8>>("field_1594");
+		List<int> instructionsToCheck = field1594.Where(x => x.field_50 == part).Select(x => x.field_51).ToList();
+		// no instructions to check? then nothing to do
+		if (instructionsToCheck.Count == 0) return false;
 
 		// find instructions to expand - return early if expansion is not possible
+		var editableProgram = part.field_2697;
+		class_188 class188 = editableProgram.method_910(part, solution.method_1942(part));
+		var extentsDictionary = class188.field_1745;
+		Dictionary<int, InstructionType[]> instructionsToExpandDictionary = new();
+
 		foreach (KeyValuePair<int, class_14> kvp in extentsDictionary)
 		{
 			int instructionPosition = kvp.Key;
@@ -107,21 +111,21 @@ public static class InstructionEditor
 			var instructionType = val.field_56;
 			var resultOfExpandingTheInstruction = val.field_57;
 
+			// if the instruction is the wrong type, or if it is not highlighted, then skip it
 			if (instructionType != resetInstructionType && instructionType != repeatInstructionType) continue;
+			if (!instructionsToCheck.Contains(instructionPosition)) continue;
 
+			// otherwise, check if it CAN expand
 			instructionsToExpandDictionary[instructionPosition] = resultOfExpandingTheInstruction;
 
-			if (resultOfExpandingTheInstruction.Length > 1)
+			int length = resultOfExpandingTheInstruction.Length;
+			for (int i = 1; i < length; ++i)
 			{
-				int length = resultOfExpandingTheInstruction.Length;
-				for (int i = 1; i < length; ++i)
+				if (extentsDictionary.ContainsKey(instructionPosition + i))
 				{
-					if (extentsDictionary.ContainsKey(instructionPosition + i))
-					{
-						//expanding this instruction would overlap
-						//one instruction on top of another, so give up
-						return false;
-					}
+					//expanding this instruction would overlap
+					//one instruction on top of another, so give up
+					return false;
 				}
 			}
 		}
@@ -129,8 +133,7 @@ public static class InstructionEditor
 		// return early if there are no instructions to expand
 		if (instructionsToExpandDictionary.Count == 0) return false;
 
-		// otherwise, expansion is possible - time to get to work //////////////////////////////////////////////////////////////////////////
-		// (is there a built-in function for expanding resets/repeats? not sure - but if there is, i should just use that)
+		// otherwise, expansion is possible - time to get to work
 		foreach (var kvp in instructionsToExpandDictionary)
 		{
 			int instructionPosition = kvp.Key;
