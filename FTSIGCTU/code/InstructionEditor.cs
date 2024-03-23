@@ -218,11 +218,14 @@ public static class InstructionEditor
 	{
 		orig(sepp_self, instructionType, position, maybeInstructionType);
 
-		//do the blank instructions right after the override instruction
-		if (drawBlanksOnProgrammingTray && instructionType == overrideInstructionType)
+		// do the blank instructions right after the override instruction
+		// need to draw it SOMEWHERE, even if not visible, in order to get the hotkey-functionality all the time
+		float x = drawBlanksOnProgrammingTray ? 0f : -1000000f;
+		float y = drawBlanksOnProgrammingTray ? 0f : -1000000f;
+		if (instructionType == overrideInstructionType)
 		{
-			orig(sepp_self, class_169.field_1653, new Vector2(268f, 146f), maybeInstructionType);
-			orig(sepp_self, class_169.field_1654, new Vector2(268f, 199f), maybeInstructionType);
+			orig(sepp_self, class_169.field_1653, new Vector2(268f + x, 146f + y), maybeInstructionType);
+			orig(sepp_self, class_169.field_1654, new Vector2(268f + x, 199f + y), maybeInstructionType);
 		}
 	}
 	private static void OnEditableProgramMethod912(orig_EditableProgram_method_912 orig, class_188 param_4563, int param_4564)
