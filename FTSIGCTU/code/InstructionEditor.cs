@@ -10,8 +10,6 @@ using System.Reflection;
 
 namespace FTSIGCTU;
 
-using Texture = class_256;
-
 public static class InstructionEditor
 {
 	static bool PressedExpandKey() => MainClass.MySettings.Instance.instructionEditingSettings.expandResetOrRepeat.Pressed(); /////////////////////////////////////////////////////// not ready yet
@@ -34,48 +32,80 @@ public static class InstructionEditor
 
 	//---------------------------------------------------//
 	//internal helper methods
+	static SortedDictionary<int, InstructionType> getArmProgramTape(Part part) => new DynamicData(part.field_2697).Get<SortedDictionary<int, InstructionType>>("field_2415");
+	static void setArmProgramTape(Part part, SortedDictionary<int, InstructionType> tape) => new DynamicData(part.field_2697).Set("field_2415", tape);
 
 	//---------------------------------------------------//
 	//internal main methods
 
-	private static void shiftInstructions(Part part, bool shiftRightwards, bool shiftFar)
+	private static void shiftInstructions(SolutionEditorScreen SES, Part part, bool shiftRightwards, bool shiftFar)
 	{
-		var tapeDyn = new DynamicData(part.field_2697);
-		var sortedDict = tapeDyn.Get<SortedDictionary<int, InstructionType>>("field_2415");
+		var sortedDict = getArmProgramTape(part);
 		var newDict = new SortedDictionary<int, InstructionType>();
 
+		// if part's program is empty, then there is nothing to do
+		if (sortedDict.Count == 0) return;
+
+		// else, we try to shift instructions around
+		// start by finding the period
+		var solution = SES.method_502();
+		int period = 0;
+
+		foreach (Part key in solution.method_1941())
+		{
+			class_188 keyClass188 = key.field_2697.method_910(key, solution.method_1942(key));
+			var keyExtentsDictionary = keyClass188.field_1745;
+
+			if (keyExtentsDictionary.Count > 0)
+			{
+				int minIndex = keyClass188.field_1745.Keys.Min();
+				int maxIndex = keyClass188.field_1745.Keys.Max();
+				int armTapeLength = maxIndex - minIndex + keyExtentsDictionary[maxIndex].field_57.Length;
+				period = Math.Max(period, armTapeLength);
+			}
+		}
+
 		//return early if we want to shift left but can't
+		int start = sortedDict.First().Key;
 		if (!shiftRightwards && sortedDict.Keys.Contains(0)) return;
-		if (!shiftRightwards && shiftFar && sortedDict.Keys.Contains(1)) return;
-		if (!shiftRightwards && shiftFar && sortedDict.Keys.Contains(2)) return;
-		if (!shiftRightwards && shiftFar && sortedDict.Keys.Contains(3)) return;
+		if (!shiftRightwards && shiftFar && start < period) return;
 
 		int shift = shiftRightwards ? 1 : -1;
-		int scale = shiftFar ? 4 : 1;
+		int scale = shiftFar ? period : 1;
 		foreach (var kvp in sortedDict)
 		{
 			newDict.Add(kvp.Key + shift*scale, kvp.Value);
 		}
-		tapeDyn.Set("field_2415", newDict);
+		setArmProgramTape(part, newDict);
 	}
-	private static void squishInstructions(Part part)
+	private static void squishInstructions(SolutionEditorScreen SES, Part part)
 	{
-		var tapeDyn = new DynamicData(part.field_2697);
-		var sortedDict = tapeDyn.Get<SortedDictionary<int, InstructionType>>("field_2415");
-		var newDict = new SortedDictionary<int, InstructionType>();
-		int i = 0;
-		if (sortedDict.Count > 0) i = sortedDict.First().Key;
-		foreach (var kvp in sortedDict)
+		var solution = SES.method_502();
+		var editableProgram = part.field_2697;
+		class_188 class188 = editableProgram.method_910(part, solution.method_1942(part));
+		var extentsDictionary = class188.field_1745;
+
+		// if part's program is empty, then there is nothing to do
+		if (extentsDictionary.Count == 0) return;
+
+		// otherwise, squish the program together, with the first instruction where it is
+		var newProgramTape = new SortedDictionary<int, InstructionType>();
+		int n = extentsDictionary.First().Key;
+		foreach (var kvp in extentsDictionary)
 		{
-			newDict.Add(i, kvp.Value);
-			i++;
+			class_14 val = kvp.Value;
+			var instructionType = val.field_56;
+			var instructionLengthInTray = val.field_57.Length;
+
+			newProgramTape[n] = instructionType;
+			n += instructionLengthInTray;
 		}
-		tapeDyn.Set("field_2415", newDict);
+
+		setArmProgramTape(part, newProgramTape);
 	}
 	private static void spreadInstructions(Part part)
 	{
-		var tapeDyn = new DynamicData(part.field_2697);
-		var sortedDict = tapeDyn.Get<SortedDictionary<int, InstructionType>>("field_2415");
+		var sortedDict = getArmProgramTape(part);
 		var newDict = new SortedDictionary<int, InstructionType>();
 		int k = 0;
 		if (sortedDict.Count > 0) k = sortedDict.First().Key;
@@ -83,7 +113,7 @@ public static class InstructionEditor
 		{
 			newDict.Add((kvp.Key-k)*2+k, kvp.Value);
 		}
-		tapeDyn.Set("field_2415", newDict);
+		setArmProgramTape(part, newDict);
 	}
 	private static bool tryToExpandHighlightedInstructionsInPart(SolutionEditorScreen SES, Part part)
 	{
@@ -123,8 +153,7 @@ public static class InstructionEditor
 			{
 				if (extentsDictionary.ContainsKey(instructionPosition + i))
 				{
-					//expanding this instruction would overlap
-					//one instruction on top of another, so give up
+					//expanding this instruction would overlap one instruction on top of another, so give up
 					return false;
 				}
 			}
@@ -134,11 +163,11 @@ public static class InstructionEditor
 		if (instructionsToExpandDictionary.Count == 0) return false;
 
 		// otherwise, expansion is possible - time to get to work
+		var armProgramTape = getArmProgramTape(part);
 		foreach (var kvp in instructionsToExpandDictionary)
 		{
 			int instructionPosition = kvp.Key;
 			var resultOfExpandingTheInstruction = kvp.Value;
-			var armProgramTape = new DynamicData(editableProgram).Get<SortedDictionary<int, InstructionType>>("field_2415");
 
 			for (int i = 0; i < resultOfExpandingTheInstruction.Length; i++)
 			{
@@ -175,11 +204,17 @@ public static class InstructionEditor
 			// misc instruction editing
 			if (keyA || keyD)
 			{
-				shiftInstructions(part, keyD, keyShift);
+				shiftInstructions(SES_self, part, keyD, keyShift);
 			}
 			else if (keyLBracket)
 			{
-				squishInstructions(part);
+				squishInstructions(SES_self, part);
+				// if a repeat instruction would have expanded out to contain a blank,
+				// then running squishInstructions will get rid of the blank in the "definition" of the repeat,
+				// but the repeat instruction would have been maneuver _as if_ it was the original longer length
+				// which would result in gaps between each repeat-definition and repeat-instance
+				// and so, we run squishInstructions a second time to get rid of the gaps
+				squishInstructions(SES_self, part);
 			}
 			else if (keyRBracket)
 			{
