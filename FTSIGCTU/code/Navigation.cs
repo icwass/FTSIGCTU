@@ -38,7 +38,7 @@ public static class Navigation
 		{
 			Sound ui_paper = class_238.field_1991.field_1874;
 			common.playSound(ui_paper);
-			GameLogic.field_2434.method_946(new Map(SES_self));
+			GameLogic.field_2434.method_946(Input.IsShiftHeld() ? new PartsMap(SES_self) : new PartsMap(SES_self));
 		}
 	}
 
@@ -79,28 +79,30 @@ public static class Navigation
 
 	public static void LoadPuzzleContent()
 	{
-		string path = "ftsigctu/textures/solution_editor/navigation/";
-		Map.t_hexagon = class_235.method_615(path + "hexagon");
-		Map.t_armbase = class_235.method_615(path + "armbase");
-		Map.t_square = class_235.method_615(path + "square");
-
-		//DEBUG -- how do we draw arms on top of track? do we even bother?
-		Map.t_armbase = Map.t_hexagon;
-
-
-		Func<SolutionEditorScreen, Part, List<Map.hex>> mapHexRulemaker(Func<SolutionEditorScreen, Part, List<HexIndex>> hexFinder, Texture texture, Color color, int priority)
-		{
-			List<Map.hex> func(SolutionEditorScreen ses, Part part)
-			{
-				List<Map.hex> ret = new();
-				foreach (var hex in hexFinder(ses,part))
-				{
-					ret.Add(new Map.hex(hex, texture, color, priority));
-				}
-				return ret;
-			}
-			return func;
-		}
+		PartsMap.addPartHexRule(common.MechanismArm1()		, PartsMap.armHexRule);
+		PartsMap.addPartHexRule(common.MechanismArm2()		, PartsMap.armHexRule);
+		PartsMap.addPartHexRule(common.MechanismArm3()		, PartsMap.armHexRule);
+		PartsMap.addPartHexRule(common.MechanismArm6()		, PartsMap.armHexRule);
+		PartsMap.addPartHexRule(common.MechanismPiston()	, PartsMap.armHexRule);
+		PartsMap.addPartHexRule(common.MechanismBerlo()     , PartsMap.armHexRule);
+		PartsMap.addPartHexRule(common.MechanismTrack()		, PartsMap.partHexRulemaker((ses, part) => common.getTrackList(part), PartsMap.c_track, PartsMap.p_track));
+		
+		PartsMap.addPartHexRule(common.GlyphEquilibrium()	, PartsMap.glyphRule);
+		PartsMap.addPartHexRule(common.GlyphCalcification()	, PartsMap.glyphRule);
+		PartsMap.addPartHexRule(common.GlyphDisposal()		, PartsMap.glyphRule);
+		PartsMap.addPartHexRule(common.GlyphBonder()		, PartsMap.glyphRule);
+		PartsMap.addPartHexRule(common.GlyphUnbonder()		, PartsMap.glyphRule);
+		PartsMap.addPartHexRule(common.GlyphMultiBonder()	, PartsMap.glyphRule);
+		PartsMap.addPartHexRule(common.GlyphDuplication()	, PartsMap.glyphRule);
+		PartsMap.addPartHexRule(common.GlyphProjection()	, PartsMap.glyphRule);
+		PartsMap.addPartHexRule(common.GlyphTriplexBonder()	, PartsMap.glyphRule);
+		PartsMap.addPartHexRule(common.GlyphPurification()	, PartsMap.glyphRule);
+		PartsMap.addPartHexRule(common.GlyphAnimismus()		, PartsMap.glyphRule);
+		PartsMap.addPartHexRule(common.GlyphUnification()	, PartsMap.glyphRule);
+		PartsMap.addPartHexRule(common.GlyphDispersion()	, PartsMap.glyphRule);
+		PartsMap.addPartHexRule(common.MechanismTrack()		, PartsMap.glyphRule);
+		PartsMap.addPartHexRule(common.GlyphEquilibrium()	, PartsMap.glyphRule);
+		PartsMap.addPartHexRule(common.MechanismTrack()		, PartsMap.glyphRule);
 
 		List<HexIndex> ioHexRule(SolutionEditorScreen ses, Part part)
 		{
@@ -111,193 +113,82 @@ public static class Navigation
 			return atomDict.Keys.ToList();
 		}
 
-		var armRule = mapHexRulemaker((ses, part) => new List<HexIndex> { part.method_1161() }, Map.t_armbase, Map.c_arm, Map.p_arm);
-		var glyphRule = mapHexRulemaker((ses, part) => common.getFootprintList(part), Map.t_hexagon, Map.c_glyph, Map.p_glyph);
-
-		Map.addHexRule(common.MechanismArm1()		, armRule);
-		Map.addHexRule(common.MechanismArm2()		, armRule);
-		Map.addHexRule(common.MechanismArm3()		, armRule);
-		Map.addHexRule(common.MechanismArm6()		, armRule);
-		Map.addHexRule(common.MechanismPiston()		, armRule);
-		Map.addHexRule(common.MechanismBerlo()		, armRule);
-		Map.addHexRule(common.MechanismTrack()		, mapHexRulemaker((ses, part) => common.getTrackList(part), Map.t_hexagon, Map.c_track, Map.p_track));
-
-		Map.addHexRule(common.GlyphEquilibrium()	, mapHexRulemaker((ses, part) => new List<HexIndex> { part.method_1161() }, Map.t_hexagon, Map.c_equilibrium, Map.p_equilibrium));
-		Map.addHexRule(common.GlyphCalcification()	, glyphRule);
-		Map.addHexRule(common.GlyphDisposal()		, glyphRule);
-		Map.addHexRule(common.GlyphBonder()			, glyphRule);
-		Map.addHexRule(common.GlyphUnbonder()		, glyphRule);
-		Map.addHexRule(common.GlyphMultiBonder()	, glyphRule);
-		Map.addHexRule(common.GlyphDuplication()	, glyphRule);
-		Map.addHexRule(common.GlyphProjection()		, glyphRule);
-		Map.addHexRule(common.GlyphTriplexBonder()	, glyphRule);
-		Map.addHexRule(common.GlyphPurification()	, glyphRule);
-		Map.addHexRule(common.GlyphAnimismus()		, glyphRule);
-		Map.addHexRule(common.GlyphUnification()	, glyphRule);
-		Map.addHexRule(common.GlyphDispersion()		, glyphRule);
-
-		Map.addHexRule(common.IOConduit()			, mapHexRulemaker((ses, part) => common.getConduitList(part), Map.t_hexagon, Map.c_conduit, Map.p_glyph));
-		Map.addHexRule(common.IOInput()				, mapHexRulemaker(ioHexRule, Map.t_hexagon, Map.c_input, Map.p_glyph));
-		Map.addHexRule(common.IOOutputStandard()	, mapHexRulemaker(ioHexRule, Map.t_hexagon, Map.c_output, Map.p_glyph));
-		Map.addHexRule(common.IOOutputInfinite()	, mapHexRulemaker(ioHexRule, Map.t_hexagon, Map.c_output, Map.p_glyph));
+		PartsMap.addPartHexRule(common.IOConduit()			, PartsMap.partHexRulemaker((ses, part) => common.getConduitList(part), PartsMap.c_conduit, PartsMap.p_glyph));
+		PartsMap.addPartHexRule(common.IOInput()			, PartsMap.partHexRulemaker(ioHexRule, PartsMap.c_input, PartsMap.p_glyph));
+		PartsMap.addPartHexRule(common.IOOutputStandard()	, PartsMap.partHexRulemaker(ioHexRule, PartsMap.c_output, PartsMap.p_glyph));
+		PartsMap.addPartHexRule(common.IOOutputInfinite()	, PartsMap.partHexRulemaker(ioHexRule, PartsMap.c_output, PartsMap.p_glyph));
 	}
 
 
-	public sealed class Map : IScreen
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	public abstract class MapBase : IScreen
 	{
-		private readonly SolutionEditorScreen ses;
-		private readonly Dictionary<HexIndex, Map.hex> stationaryMapHexes;
-		Func<HexIndex, Vector2> positionConverter;
-		Func<Vector2, SolutionEditorScreen, Vector2> screenpositionConverter;
-		Func<Vector2, Vector2>  repositionScreen;
-		Texture letter6;
-		Vector2 mapResolution = new Vector2(950, 550);
+		public MapBase(SolutionEditorScreen ses)
+		{
+			this.ses = ses;
+			this.whitePixel = class_238.field_1989.field_71;
+		}
+		// internal data
+		internal readonly SolutionEditorScreen ses;
+		internal readonly Texture whitePixel;
+		internal Vector2 mapResolution = new Vector2(950, 550);
+		Vector2 mapOrigin => 0.5f * (Input.ScreenSize() - common.textureDimensions(letter6)) + mapOffset + new Vector2(15, 15);
+
+		// internal functions for derived classes
+		internal abstract void drawFunction(float deltaTime, Vector2 mouseMapPos);
+
+
+		internal void drawTexture(Texture texture, Vector2 position, Vector2 scaling) => drawTexture(texture, position, scaling, Color.White);
+		internal void drawTexture(Texture texture, Vector2 position, Vector2 scaling, Color color)
+		{
+			Matrix4 translationMatrix = Matrix4.method_1070((position + mapOrigin).ToVector3(0f));
+			Matrix4 scalingMatrix = Matrix4.method_1074(new Vector2(scaling.X * texture.field_2056.X, scaling.Y * texture.field_2056.Y).ToVector3(0f));
+			class_135.method_262(texture, color, translationMatrix * scalingMatrix);
+		}
+		internal void drawRectangle(float x, float y, float w, float h, Color color)
+		{
+			drawTexture(whitePixel, new Vector2(x, y), new Vector2(w, h), color);
+		}
+		internal void drawViewport(Vector2 position, Vector2 dimensions)
+		{
+			// assumes position and dimensions are scaled already
+			void rect(float x, float y, float w, float h) => drawRectangle(x + position.X, y + position.Y, w, h, Color.Black.WithAlpha(0.2f));
+			float W = dimensions.X;
+			float H = dimensions.Y;
+			float b = 10f; // border
+			rect(-b, -b, b, b + H);
+			rect(-b, H, b + W, b);
+			rect(0, -b, b + W, b);
+			rect(W, 0, b, b + H);
+		}
+
+		// private data
+		Texture letter6 => class_238.field_1989.field_85.field_571;
 		Vector2 mapOffset = new Vector2(155, 155);
-		Vector2 mapHexDimensions => class_187.field_1742.field_1744;//= new Vector2(80, 70);
-		Vector2 mapOrigin;
-		float mapFactor;
 
-		Vector2 boardhexDimensions => class_187.field_1742.field_1744;
-
-
-		static Dictionary<PartType, Func<SolutionEditorScreen, Part, List<Map.hex>>> hexRules = new();
-
-		static Color Color_RGBA(int r, int g, int b, float alpha = 1f)
-		{
-			return Color.FromHex(r * 256 * 256 + g * 256 + b).WithAlpha(alpha);
-		}
-
-		public static readonly Color c_chamber		= Color_RGBA(128,  64,   0, 0.75f);
-		public static readonly Color c_equilibrium	= Color_RGBA(128, 128, 128, 0.75f);
-		public static readonly Color c_glyph		= Color_RGBA( 64,  64,  64, 0.75f);
-		public static readonly Color c_input		= Color_RGBA(  0, 128, 192, 0.75f);
-		public static readonly Color c_output		= Color_RGBA(  0, 128,  64, 0.75f);
-		public static readonly Color c_conduit		= Color_RGBA(128,   0, 128, 0.75f);
-		public static readonly Color c_track		= Color_RGBA(  0,   0,   0, 0.75f);
-		public static readonly Color c_arm			= Color_RGBA(192, 192, 192, 0.75f);
-		public static readonly Color c_critelli		= Color_RGBA(128,   0,   0, 0.75f);
-
-		public static readonly int p_board = -1000000;
-		public static readonly int p_equilibrium = -1000;
-		public static readonly int p_glyph = 0;
-		public static readonly int p_track = 1000;
-		public static readonly int p_arm = 1000000;
-
-		public static Texture t_hexagon, t_armbase, t_square;
-
-		public static void addHexRule(PartType partType, Func<SolutionEditorScreen, Part, List<Map.hex>> rule)
-		{
-			if (hexRules.Keys.Contains(partType))
-			{
-				Logger.Log($"FTSIGCTU.Navigation.Map.addRule: partType {partType.field_1529} already has a hexRule, ignoring.");
-			}
-			else
-			{
-				hexRules.Add(partType, rule);
-			}
-		}
-
-		public Map(SolutionEditorScreen _ses)
-		{
-			this.ses = _ses;
-			this.stationaryMapHexes = new();
-			Solution solution = ses.method_502();
-
-			Puzzle puzzle = solution.method_1934();
-			var maybeChambers = puzzle.field_2779;
-			if (maybeChambers.method_1085())
-			{
-				foreach (var chamber in maybeChambers.method_1087().field_2071)
-				{
-					foreach (var hex in chamber.field_1747.field_1729)
-					{
-						var wallHex = new Map.hex(hex + chamber.field_1746, Map.t_hexagon, Map.c_chamber, Map.p_board);
-						wallHex.updateDict(stationaryMapHexes);
-					}
-				}
-			}
-
-			var partsList = solution.field_3919;
-			foreach (var part in partsList.Where(x => hexRules.Keys.Contains(common.getPartType(x))))
-			{
-				foreach (var hex in hexRules[common.getPartType(part)](ses, part))
-				{
-					hex.updateDict(stationaryMapHexes);
-				}
-			}
-
-			if (showCritelliOnMap || stationaryMapHexes.Count == 0)
-			{
-				Map.hex hex = new(new HexIndex(0,0), Map.t_armbase, Map.c_critelli, p_arm);
-				hex.updateDict(stationaryMapHexes);
-			}
-
-			Vector2 convertvector(Vector2 vec, SolutionEditorScreen ses)
-			{
-				Vector2 vec2 = vec - ses.field_4009;
-				float x = vec2.X / boardhexDimensions.X;
-				float y = vec2.Y / boardhexDimensions.Y;
-				return new Vector2(x, y);
-			}
-			double minX = convertvector(new Vector2(0,0), ses).X;
-			double minY = convertvector(new Vector2(0,0), ses).Y;
-			double maxX = convertvector(Input.ScreenSize(), ses).X;
-			double maxY = convertvector(Input.ScreenSize(), ses).Y;
-
-			foreach (var hex in stationaryMapHexes.Keys)
-			{
-				double x = hex.Q + hex.R / 2f;
-				double y = hex.R;
-				minX = Math.Min(minX, x);
-				minY = Math.Min(minY, y);
-				maxX = Math.Max(maxX, x);
-				maxY = Math.Max(maxY, y);
-			}
-
-			double widthFactor = mapResolution.X / ((maxX - minX) * mapHexDimensions.X);
-			double heightFactor = mapResolution.Y / ((maxY - minY) * mapHexDimensions.Y);
-
-			mapFactor = (float) Math.Min(widthFactor, heightFactor);
-
-
-			Vector2 convertScreenPosition(Vector2 vec, SolutionEditorScreen ses)
-			{
-				Vector2 vec2 = vec - ses.field_4009;
-				double x = (vec2.X / boardhexDimensions.X - (maxX + minX) / 2) * mapHexDimensions.X;
-				double y = (vec2.Y / boardhexDimensions.Y - (maxY + minY) / 2) * mapHexDimensions.Y;
-				return mapOrigin + mapResolution / 2 + new Vector2((float)x, (float)y) * mapFactor;
-			}
-
-			Vector2 repositionScreenPosition(Vector2 vec)
-			{
-				Vector2 vec2 = (vec - mapOrigin - mapResolution / 2) / mapFactor;
-				double y = (maxY + minY) / 2 + vec2.Y / mapHexDimensions.Y;
-				double x = (maxX + minX) / 2 + vec2.X / mapHexDimensions.X;
-				return Input.ScreenSize()/2 - new Vector2((float)x * boardhexDimensions.X, (float)y * boardhexDimensions.Y);
-			}
-
-			this.screenpositionConverter = convertScreenPosition;
-			this.repositionScreen = repositionScreenPosition;
-
-
-			letter6 = class_238.field_1989.field_85.field_571;
-			mapOrigin = new Vector2(15, 15) + (Input.ScreenSize() / 2) - (common.textureDimensions(letter6) / 2) + mapOffset;
-
-			Vector2 convertPosition(HexIndex hex)
-			{
-				double x = (hex.Q + hex.R / 2f - (maxX + minX) / 2) * mapHexDimensions.X;
-				double y = (hex.R - (maxY + minY) / 2) * mapHexDimensions.Y;
-				return mapOrigin + mapResolution/2 + new Vector2((float) x, (float) y) * mapFactor;
-			}
-
-			this.positionConverter = convertPosition;
-		}
-
-
+		// IScreen interface implementation
 		public bool method_1037() => false;
-		public void method_47(bool param_4183) => GameLogic.field_2434.field_2464 = true;
+		public void method_47(bool _) => GameLogic.field_2434.field_2464 = true;
 		public void method_48() { }
-		public void method_50(float param_4184)
+		public void method_50(float deltaTime)
 		{
 			bool returnToEditorKeypress =
 				Input.IsSdlKeyPressed(SDL.enum_160.SDLK_TAB)
@@ -314,82 +205,10 @@ public static class Navigation
 				GameLogic.field_2434.method_949();
 			}
 
-			if (Input.IsLeftClickHeld())
-			{
-				ses.field_4009 = repositionScreen(Input.MousePos());
-			}
-
-			// draw map backdrop
-			class_135.method_272(letter6, mapOrigin.Rounded() - mapOffset);
-
-			// draw viewport
-			float texScaling = Math.Max(mapFactor, 0.05f);
-			float viewportScaling = Math.Max(mapFactor, 0.005f);
-
-			Vector2 viewBase = screenpositionConverter(Input.ScreenSize() / 2, ses) - Input.ScreenSize() / 2 * viewportScaling;
-
-			Vector2[] translations = new Vector2[]
-			{
-				viewBase + new Vector2(-10,-10),
-				viewBase + new Vector2(-10,-10),
-				viewBase + new Vector2(-10, Input.ScreenSize().Y * viewportScaling),
-				viewBase + new Vector2(Input.ScreenSize().X * viewportScaling, -10)
-			};
-			Vector2[] scalings = new Vector2[]
-			{
-				new Vector2(20 + Input.ScreenSize().X * viewportScaling, 10),
-				new Vector2(10, 20 + Input.ScreenSize().Y * viewportScaling),
-				new Vector2(20 + Input.ScreenSize().X * viewportScaling, 10),
-				new Vector2(10, 20 + Input.ScreenSize().Y * viewportScaling),
-			};
-			for(int i = 0; i < translations.Length; i++)
-			{
-				Matrix4 translationMatrix = Matrix4.method_1070(translations[i].ToVector3(0.0f));
-				Matrix4 scalingMatrix = Matrix4.method_1074(scalings[i].ToVector3(0.0f));
-				class_135.method_262(Map.t_square, Color.Black.WithAlpha(0.2f), translationMatrix * scalingMatrix);
-			}
-
-			// draw map hexes
-			foreach (var kvp in stationaryMapHexes)
-			{
-				var hex = kvp.Value;
-				var tex = hex.texture;
-				Vector2 translation = positionConverter(hex.index) - common.textureDimensions(tex)/2* texScaling;
-				Matrix4 translationMatrix = Matrix4.method_1070(translation.ToVector3(0.0f));
-				Vector2 scaling = common.textureDimensions(tex) * texScaling;
-				Matrix4 scalingMatrix = Matrix4.method_1074(scaling.ToVector3(0.0f));
-				class_135.method_262(tex, hex.color, translationMatrix * scalingMatrix);
-			}
+			// draw
+			class_135.method_272(letter6, mapOrigin - mapOffset);
+			drawFunction(deltaTime, Input.MousePos() - mapOrigin);
 		}
-
-
-		public struct hex
-		{
-			public HexIndex index;
-			public Texture texture;
-			public Color color;
-			public int priority;
-			public hex(HexIndex _index, Texture _texture, Color _color, int _priority = 0)
-			{
-				this.index = _index;
-				this.texture = _texture;
-				this.color = _color;
-				this.priority = _priority;
-			}
-			public HexIndex getIndex() => index;
-			public void updateDict(Dictionary<HexIndex, Map.hex> dict)
-			{
-				if (!dict.ContainsKey(index))
-				{
-					dict.Add(index, this);
-				}
-				else if (dict[index].priority <= priority)
-				{
-					dict[index] = this;
-				}
-			}
-		}
-
 	}
 
 
@@ -398,4 +217,222 @@ public static class Navigation
 
 
 
+
+
+
+
+
+
+	public class PartsMap : MapBase
+	{
+		// public API
+		static Color Color_RGBA(int r, int g, int b, float alpha = 1f) => Color.FromHex(r * 256 * 256 + g * 256 + b).WithAlpha(alpha);
+		static Texture hexagon;
+
+		public static readonly Color c_chamber	= Color_RGBA(128,  64,   0, 0.75f);
+		public static readonly Color c_equil	= Color_RGBA(128, 128, 128, 0.75f);
+		public static readonly Color c_glyph	= Color_RGBA( 64,  64,  64, 0.75f);
+		public static readonly Color c_input	= Color_RGBA(  0, 128, 192, 0.75f);
+		public static readonly Color c_output	= Color_RGBA(  0, 128,  64, 0.75f);
+		public static readonly Color c_conduit	= Color_RGBA(128,   0, 128, 0.75f);
+		public static readonly Color c_track	= Color_RGBA(  0,   0,   0, 0.75f);
+		public static readonly Color c_arm		= Color_RGBA(192, 192, 192, 0.75f);
+		public static readonly Color c_critelli	= Color_RGBA(128,   0,   0, 0.75f);
+
+		public static readonly int p_board = -1000000;
+		public static readonly int p_equil = -1000;
+		public static readonly int p_glyph = 0;
+		public static readonly int p_track = 1000;
+		public static readonly int p_arm = 1000000;
+
+		public static void addPartHexRule(PartType partType, Func<SolutionEditorScreen, Part, List<mapHex>> rule, bool overwrite = false)
+		{
+			if (partHexRules.Keys.Contains(partType))
+			{
+				if (!overwrite)
+				{
+					Logger.Log($"FTSIGCTU.Navigation.PartsMap.addPartHexRule: partType {partType.field_1529} already has a rule, ignoring new rule.");
+					return;
+				}
+				Logger.Log($"FTSIGCTU.Navigation.PartsMap.addPartHexRule: partType {partType.field_1529} already has a rule, overwriting with new rule.");
+			}
+			partHexRules.Add(partType, rule);
+		}
+
+		public static Func<SolutionEditorScreen, Part, List<mapHex>> partHexRulemaker(Func<SolutionEditorScreen, Part, List<HexIndex>> hexFinder, Color color, int priority)
+		{
+			return (ses, part) =>
+			{
+				List<mapHex> ret = new();
+				foreach (var hex in hexFinder(ses, part))
+				{
+					ret.Add(new mapHex(hex, color, priority));
+				}
+				return ret;
+			};
+		}
+
+		public static Func<SolutionEditorScreen, Part, List<mapHex>> armHexRule => partHexRulemaker((ses, part) => new List<HexIndex> { part.method_1161() }, c_arm, p_arm);
+		public static Func<SolutionEditorScreen, Part, List<mapHex>> glyphRule = partHexRulemaker((ses, part) => common.getFootprintList(part), c_glyph, p_glyph);
+
+		// private data and functions
+		readonly Dictionary<HexIndex, mapHex> stationaryMapHexes;
+		static Dictionary<PartType, Func<SolutionEditorScreen, Part, List<mapHex>>> partHexRules = new();
+		float mapScalingFactor, texScalingFactor, viewScalingFactor;
+		Vector2 boardhexDimensions => class_187.field_1742.field_1744;//= new Vector2(80, 70);
+
+		Func<HexIndex, Vector2> positionConverter;
+		Func<Vector2, SolutionEditorScreen, Vector2> screenpositionConverter;
+		Func<Vector2, Vector2> repositionScreen;
+
+		// constructor
+		public PartsMap(SolutionEditorScreen ses) : base(ses)
+		{
+			// load hexagon shape as needed
+			hexagon ??= class_235.method_615("ftsigctu/textures/solution_editor/navigation/hexagon");
+
+			///////////////////////////////////////////////////
+			// determine the stationary hexes we need to draw
+			this.stationaryMapHexes = new();
+			Solution solution = ses.method_502();
+
+			void addStationaryHex(mapHex hex)
+			{
+				if (!stationaryMapHexes.ContainsKey(hex.index) || stationaryMapHexes[hex.index].priority < hex.priority)
+				{
+					stationaryMapHexes[hex.index] = hex;
+				}
+			}
+
+			// get critelli
+			addStationaryHex(new mapHex(new HexIndex(0, 0), c_critelli, showCritelliOnMap ? int.MaxValue : int.MinValue));
+
+			// get chamber hexes
+			Puzzle puzzle = solution.method_1934();
+			var maybeChambers = puzzle.field_2779;
+
+			if (maybeChambers.method_1085())
+			{
+				foreach (var chamber in maybeChambers.method_1087().field_2071)
+				{
+					foreach (var hex in chamber.field_1747.field_1729)
+					{
+						addStationaryHex(new mapHex(hex + chamber.field_1746, c_chamber, p_board));
+					}
+				}
+			}
+
+			// get hexes for parts
+			var partsList = solution.field_3919;
+			foreach (var part in partsList)
+			{
+				var partType = common.getPartType(part);
+
+				if (partHexRules.Keys.Contains(partType))
+				{
+					foreach (var hex in partHexRules[partType](ses, part))
+					{
+						addStationaryHex(hex);
+					}
+				}
+				else
+				{
+					// undefined part type - ignore for now
+				}
+			}
+
+			///////////////////////////////////////////////////////////////
+			// not drawing anything animated, currently, so this is blank
+
+			///////////////////////////////////////
+			// determine how big of a map we need
+			Vector2 convertvector(Vector2 vec, SolutionEditorScreen ses)
+			{
+				Vector2 vec2 = vec - ses.field_4009;
+				float x = vec2.X / boardhexDimensions.X;
+				float y = vec2.Y / boardhexDimensions.Y;
+				return new Vector2(x, y);
+			}
+			double minX = convertvector(new Vector2(0, 0), ses).X;
+			double minY = convertvector(new Vector2(0, 0), ses).Y;
+			double maxX = convertvector(Input.ScreenSize(), ses).X;
+			double maxY = convertvector(Input.ScreenSize(), ses).Y;
+
+			foreach (var hex in stationaryMapHexes.Keys)
+			{
+				double x = hex.Q + hex.R / 2f;
+				double y = hex.R;
+				minX = Math.Min(minX, x);
+				minY = Math.Min(minY, y);
+				maxX = Math.Max(maxX, x);
+				maxY = Math.Max(maxY, y);
+			}
+
+			double widthFactor = mapResolution.X / ((maxX - minX) * boardhexDimensions.X);
+			double heightFactor = mapResolution.Y / ((maxY - minY) * boardhexDimensions.Y);
+
+			mapScalingFactor = (float)Math.Min(widthFactor, heightFactor);
+			texScalingFactor = Math.Max(mapScalingFactor, 0.05f);
+			viewScalingFactor = Math.Max(mapScalingFactor, 0.005f);
+
+			Vector2 convertScreenPosition(Vector2 vec, SolutionEditorScreen ses)
+			{
+				Vector2 vec2 = vec - ses.field_4009;
+				double x = (vec2.X / boardhexDimensions.X - (maxX + minX) / 2) * boardhexDimensions.X;
+				double y = (vec2.Y / boardhexDimensions.Y - (maxY + minY) / 2) * boardhexDimensions.Y;
+				return mapResolution / 2 + new Vector2((float)x, (float)y) * mapScalingFactor;
+			}
+
+			Vector2 repositionScreenPosition(Vector2 vec)
+			{
+				Vector2 vec2 = (vec - mapResolution / 2) / mapScalingFactor;
+				double x = (maxX + minX) / 2 + vec2.X / boardhexDimensions.X;
+				double y = (maxY + minY) / 2 + vec2.Y / boardhexDimensions.Y;
+				return Input.ScreenSize() / 2 - new Vector2((float)x * boardhexDimensions.X, (float)y * boardhexDimensions.Y);
+			}
+
+			this.screenpositionConverter = convertScreenPosition;
+			this.repositionScreen = repositionScreenPosition;
+
+			Vector2 convertPosition(HexIndex hex)
+			{
+				double x = (hex.Q + hex.R / 2f - (maxX + minX) / 2) * boardhexDimensions.X;
+				double y = (hex.R - (maxY + minY) / 2) * boardhexDimensions.Y;
+				return mapResolution / 2 + new Vector2((float)x, (float)y) * mapScalingFactor;
+			}
+
+			this.positionConverter = convertPosition;
+		}
+
+		internal override void drawFunction(float deltaTime, Vector2 mapMousePos)
+		{
+			// draw map hexes
+			foreach (var kvp in stationaryMapHexes)
+			{
+				var hex = kvp.Value;
+				var position = positionConverter(hex.index) - common.textureDimensions(hexagon) / 2 * texScalingFactor;
+				var scaling = new Vector2(1, 1) * texScalingFactor;
+				drawTexture(hexagon, position, scaling, hex.color);
+			}
+
+			// update and draw viewport
+			if (Input.IsLeftClickHeld()) ses.field_4009 = repositionScreen(mapMousePos);
+
+			Vector2 viewBase = screenpositionConverter(Input.ScreenSize() / 2, ses) - Input.ScreenSize() / 2 * viewScalingFactor;
+			drawViewport(viewBase, Input.ScreenSize() * viewScalingFactor);
+		}
+
+		public struct mapHex
+		{
+			public HexIndex index;
+			public Color color;
+			public int priority;
+			public mapHex(HexIndex _index, Color _color, int _priority = 0)
+			{
+				this.index = _index;
+				this.color = _color;
+				this.priority = _priority;
+			}
+		}
+	}
 }
