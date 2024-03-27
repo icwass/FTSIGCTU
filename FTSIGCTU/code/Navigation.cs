@@ -38,7 +38,7 @@ public static class Navigation
 		{
 			Sound ui_paper = class_238.field_1991.field_1874;
 			common.playSound(ui_paper);
-			GameLogic.field_2434.method_946(Input.IsShiftHeld() ? new PartsMap(SES_self) : new PartsMap(SES_self));
+			GameLogic.field_2434.method_946(Input.IsShiftHeld() ? new InstructionsMap(SES_self) : new PartsMap(SES_self));
 		}
 	}
 
@@ -117,26 +117,25 @@ public static class Navigation
 		PartsMap.addPartHexRule(common.IOInput()			, PartsMap.partHexRulemaker(ioHexRule, PartsMap.c_input, PartsMap.p_glyph));
 		PartsMap.addPartHexRule(common.IOOutputStandard()	, PartsMap.partHexRulemaker(ioHexRule, PartsMap.c_output, PartsMap.p_glyph));
 		PartsMap.addPartHexRule(common.IOOutputInfinite()	, PartsMap.partHexRulemaker(ioHexRule, PartsMap.c_output, PartsMap.p_glyph));
+
+
+
+		InstructionsMap.addInstructionColor(class_169.field_1652, InstructionsMap.c_override); // override
+		InstructionsMap.addInstructionColor(class_169.field_1653, InstructionsMap.c_blank); // blank 1
+		InstructionsMap.addInstructionColor(class_169.field_1654, InstructionsMap.c_comment); // blank 2 / comment
+		InstructionsMap.addInstructionColor(class_169.field_1655, InstructionsMap.c_advance); // advance
+		InstructionsMap.addInstructionColor(class_169.field_1656, InstructionsMap.c_retreat); // retreat
+		InstructionsMap.addInstructionColor(class_169.field_1657, InstructionsMap.c_rotateR); // rotate CW
+		InstructionsMap.addInstructionColor(class_169.field_1658, InstructionsMap.c_rotateL); // rotate CCW
+		InstructionsMap.addInstructionColor(class_169.field_1659, InstructionsMap.c_extend); // extend
+		InstructionsMap.addInstructionColor(class_169.field_1660, InstructionsMap.c_retract); // retract
+		InstructionsMap.addInstructionColor(class_169.field_1661, InstructionsMap.c_pivotR); // pivot CW
+		InstructionsMap.addInstructionColor(class_169.field_1662, InstructionsMap.c_pivotL); // pivot CCW
+		InstructionsMap.addInstructionColor(class_169.field_1663, InstructionsMap.c_grab); // grab
+		InstructionsMap.addInstructionColor(class_169.field_1664, InstructionsMap.c_drop); // drop
+		InstructionsMap.addInstructionColor(class_169.field_1665, InstructionsMap.c_reset); // reset
+		InstructionsMap.addInstructionColor(class_169.field_1666, InstructionsMap.c_repeat); // repeat
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 	public abstract class MapBase : IScreen
@@ -153,6 +152,7 @@ public static class Navigation
 		Vector2 mapOrigin => 0.5f * (Input.ScreenSize() - common.textureDimensions(letter6)) + mapOffset + new Vector2(15, 15);
 
 		// internal functions for derived classes
+		internal static Color Color_RGBA(int r, int g, int b, float alpha = 1f) => Color.FromHex(r * 256 * 256 + g * 256 + b).WithAlpha(alpha);
 		internal abstract void drawFunction(float deltaTime, Vector2 mouseMapPos);
 
 
@@ -212,23 +212,209 @@ public static class Navigation
 	}
 
 
+	public class InstructionsMap : MapBase
+	{
+		// public API
+		public static readonly Color c_transparent	= Color_RGBA(255, 255, 255, 0f);
+		public static readonly Color c_override	= Color_RGBA(128, 128, 128, 1f);
+		public static readonly Color c_blank	= Color_RGBA(192, 192, 192, 1f);
+		public static readonly Color c_comment	= Color_RGBA(  0,   0, 192, 1f);
+
+		public static readonly Color c_grab		= Color_RGBA(192, 128,   0, 1f);
+		public static readonly Color c_drop		= Color_RGBA(128,  64,   0, 1f);
+
+		public static readonly Color c_rotateL	= Color_RGBA(  0, 128, 192, 1f);
+		public static readonly Color c_rotateR	= Color_RGBA(  0,  64, 128, 1f);
+		public static readonly Color c_pivotL	= Color_RGBA(  0, 192, 128, 1f);
+		public static readonly Color c_pivotR	= Color_RGBA(  0, 128,  64, 1f);
+
+		public static readonly Color c_advance	= Color_RGBA(192, 192,   0, 1f);
+		public static readonly Color c_retreat	= Color_RGBA(128, 128,   0, 1f);
+
+		public static readonly Color c_extend	= Color_RGBA(192,   0, 192, 1f);
+		public static readonly Color c_retract	= Color_RGBA(128,   0, 128, 1f);
+		public static readonly Color c_reset	= Color_RGBA(192,   0,   0, 1f);
+		public static readonly Color c_repeat	= Color_RGBA(128,   0,   0, 1f);
+
+		public static void addInstructionColor(InstructionType instructionType, Color color, bool overwrite = false)
+		{
+			if (InstructionColors.Keys.Contains(instructionType))
+			{
+				if (!overwrite)
+				{
+					Logger.Log($"FTSIGCTU.Navigation.InstructionsMap.addInstructionColor: instructionType {instructionType.field_2543} already has a color, ignoring new color.");
+					return;
+				}
+				Logger.Log($"FTSIGCTU.Navigation.InstructionsMap.addInstructionColor: instructionType {instructionType.field_2543} already has a color, overwriting with new color.");
+			}
+			InstructionColors.Add(instructionType, color);
+		}
+
+		// private data and functions
+		readonly SolutionEditorProgramPanel sepp;
+		readonly DynamicData sepp_dyn;
+		Vector2 viewportDimensions => new Vector2(Input.ScreenSize().X - 382f, SolutionEditorProgramPanel.field_3982.Y * 6);
+		Vector2 viewportPosition => sepp_dyn.Get<Vector2>("field_3988");
+		static Vector2 instructionTileDimensions => SolutionEditorProgramPanel.field_3982; //= new Vector2(41f, 38f);
+
+		float mapScalingFactor, texScalingFactor, viewScalingFactor;
+
+		Func<int, int, Vector2> positionConverter;
+		Action<Vector2> repositionViewport;
 
 
+		List<mapTile> mapTiles = new();
+		List<mapTile> mapExtents = new();
 
+		static Dictionary<InstructionType, Color> InstructionColors = new();
 
+		// constructor
+		public InstructionsMap(SolutionEditorScreen ses) : base(ses)
+		{
+			this.sepp = ses.field_4003;
+			this.sepp_dyn = new DynamicData(sepp);
 
+			// add the origin and the bottom-right corner of the current view
+			mapTiles.Add(new mapTile(0, 0, c_transparent));
 
+			Vector2 bottomRight = -viewportPosition + viewportDimensions;
 
+			int minX = 0;
+			int minY = 0;
+			int maxX = (int)(Math.Ceiling(bottomRight.X) / instructionTileDimensions.X);
+			int maxY = (int)(Math.Ceiling(bottomRight.Y) / instructionTileDimensions.Y);
 
+			mapTiles.Add(new mapTile(maxX, maxY, c_transparent));
 
+			// find all the instruction tiles
+			var solution = ses.method_502();
+			var programmableParts = solution.method_1941();
 
+			maxY = Math.Max(maxY, programmableParts.Count);
+
+			for (int j = 0; j < programmableParts.Count; j++)
+			{
+				var part = programmableParts[j];
+				var editableProgram = part.field_2697;
+				
+				class_188 class188 = editableProgram.method_910(part, solution.method_1942(part));
+				var programDictionary = class188.field_1745;
+
+				foreach (var kvp in programDictionary)
+				{
+					int i = kvp.Key;
+					class_14 val = kvp.Value;
+					var instructionType = val.field_56;
+					var extentsList = val.field_57;
+					var instructionLengthInTray = extentsList.Length;
+
+					InstructionType[] list = new InstructionType[1] { instructionType };
+
+					if (instructionLengthInTray > 1)
+					{
+						list = val.field_57;
+
+						for (int k = 0; k < list.Length; k++)
+						{
+							if (InstructionColors.ContainsKey(instructionType)) mapTiles.Add(new mapTile(i + k, j, InstructionColors[instructionType]));
+							if (InstructionColors.ContainsKey(list[k])) mapExtents.Add(new mapTile(i + k, j, InstructionColors[list[k]]));
+						}
+					}
+					else
+					{
+						if (InstructionColors.ContainsKey(instructionType)) mapTiles.Add(new mapTile(i, j, InstructionColors[instructionType]));
+					}
+
+					maxX = Math.Max(maxX, i + list.Length - 1);
+				}
+			}
+
+			///////////////////////////////////////////////////////////////
+			// not drawing anything animated, currently, so this is blank
+
+			///////////////////////////////////////
+			// determine how big of a map we need
+			double widthFactor = mapResolution.X / ((maxX - minX) * instructionTileDimensions.X);
+			double heightFactor = mapResolution.Y / ((maxY - minY) * instructionTileDimensions.Y);
+
+			mapScalingFactor = (float)Math.Min(widthFactor, heightFactor);
+			texScalingFactor = Math.Max(mapScalingFactor, 0.05f);
+			viewScalingFactor = Math.Max(mapScalingFactor, 0.005f);
+
+			float centerX = 0.5f * (maxX + minX);
+			float centerY = 0.5f * (maxY + minY);
+
+			Vector2 PositionConverter(int i, int j)
+			{
+				//converts tile coordinates to mapSpace coordinates
+				float x = (i - centerX) * instructionTileDimensions.X;
+				float y = (j - centerY) * instructionTileDimensions.Y;
+				return 0.5f * mapResolution + new Vector2(x, -y) * mapScalingFactor;
+			}
+
+			this.positionConverter = PositionConverter;
+
+			void RepositionViewport(Vector2 mapMousePos)
+			{
+				//
+				Vector2 u = -PositionConverter(0, 0);
+				Vector2 v = 0.5f * mapScalingFactor * new Vector2(-viewportDimensions.X, viewportDimensions.Y);
+				Vector2 ret = u + mapMousePos + v;
+				ret = -ret / mapScalingFactor;
+
+				float nearestColumnPos = 0 * instructionTileDimensions.X;
+				float nearestRowPos = 0 * instructionTileDimensions.Y;
+				float farthestColumnPos = (maxX+1) * instructionTileDimensions.X - viewportDimensions.X;
+				float farthestRowPos = maxY * instructionTileDimensions.Y - viewportDimensions.Y;
+				Vector2 newPosition = new Vector2(Math.Max(-farthestColumnPos, Math.Min(nearestColumnPos, ret.X)), Math.Min(farthestRowPos, Math.Max(ret.Y, nearestRowPos)));
+
+				sepp_dyn.Set("field_3988", newPosition);
+			}
+
+			this.repositionViewport = RepositionViewport;
+		}
+
+		internal override void drawFunction(float deltaTime, Vector2 mapMousePos)
+		{
+			// draw instruction squares
+			foreach (var tile in mapTiles)
+			{
+				var scaling = instructionTileDimensions * texScalingFactor;
+				var position = positionConverter(tile.x, tile.y+1);// - 0.5f * scaling;
+				drawRectangle(position.X, position.Y, scaling.X, scaling.Y, tile.color);
+			}
+
+			// draw extents (smaller squares from resets, repeats, etc)
+			foreach (var tile in mapExtents)
+			{
+				var scaling = instructionTileDimensions * texScalingFactor;
+				var position = positionConverter(tile.x, tile.y+1);// - 0.5f * scaling;
+				drawRectangle(position.X, position.Y, scaling.X, scaling.Y * 0.5f, tile.color);
+			}
+
+			// update and draw viewport
+			if (Input.IsLeftClickHeld()) repositionViewport(mapMousePos);
+
+			Vector2 viewBase = positionConverter(0,0) / viewScalingFactor - viewportPosition + new Vector2(0f, -viewportDimensions.Y);
+			drawViewport(viewBase * viewScalingFactor, viewportDimensions * viewScalingFactor);
+		}
+
+		public struct mapTile
+		{
+			public int x, y;
+			public Color color;
+			public mapTile(int x, int y, Color color)
+			{
+				this.x = x;
+				this.y = y;
+				this.color = color;
+			}
+		}
+	}
 
 	public class PartsMap : MapBase
 	{
 		// public API
-		static Color Color_RGBA(int r, int g, int b, float alpha = 1f) => Color.FromHex(r * 256 * 256 + g * 256 + b).WithAlpha(alpha);
-		static Texture hexagon;
-
 		public static readonly Color c_chamber	= Color_RGBA(128,  64,   0, 0.75f);
 		public static readonly Color c_equil	= Color_RGBA(128, 128, 128, 0.75f);
 		public static readonly Color c_glyph	= Color_RGBA( 64,  64,  64, 0.75f);
@@ -276,6 +462,7 @@ public static class Navigation
 		public static Func<SolutionEditorScreen, Part, List<mapHex>> glyphRule = partHexRulemaker((ses, part) => common.getFootprintList(part), c_glyph, p_glyph);
 
 		// private data and functions
+		static Texture hexagon;
 		readonly Dictionary<HexIndex, mapHex> stationaryMapHexes;
 		static Dictionary<PartType, Func<SolutionEditorScreen, Part, List<mapHex>>> partHexRules = new();
 		float mapScalingFactor, texScalingFactor, viewScalingFactor;
@@ -283,7 +470,7 @@ public static class Navigation
 
 		Func<HexIndex, Vector2> positionConverter;
 		Func<Vector2, SolutionEditorScreen, Vector2> screenpositionConverter;
-		Func<Vector2, Vector2> repositionScreen;
+		Action<Vector2> repositionViewport;
 
 		// constructor
 		public PartsMap(SolutionEditorScreen ses) : base(ses)
@@ -296,6 +483,7 @@ public static class Navigation
 			this.stationaryMapHexes = new();
 			Solution solution = ses.method_502();
 
+			// define helper
 			void addStationaryHex(mapHex hex)
 			{
 				if (!stationaryMapHexes.ContainsKey(hex.index) || stationaryMapHexes[hex.index].priority < hex.priority)
@@ -375,33 +563,38 @@ public static class Navigation
 			texScalingFactor = Math.Max(mapScalingFactor, 0.05f);
 			viewScalingFactor = Math.Max(mapScalingFactor, 0.005f);
 
+			double centerX = (maxX + minX) / 2;
+			double centerY = (maxY + minY) / 2;
+
 			Vector2 convertScreenPosition(Vector2 vec, SolutionEditorScreen ses)
 			{
 				Vector2 vec2 = vec - ses.field_4009;
-				double x = (vec2.X / boardhexDimensions.X - (maxX + minX) / 2) * boardhexDimensions.X;
-				double y = (vec2.Y / boardhexDimensions.Y - (maxY + minY) / 2) * boardhexDimensions.Y;
+				double x = (vec2.X / boardhexDimensions.X - centerX) * boardhexDimensions.X;
+				double y = (vec2.Y / boardhexDimensions.Y - centerY) * boardhexDimensions.Y;
 				return mapResolution / 2 + new Vector2((float)x, (float)y) * mapScalingFactor;
 			}
 
-			Vector2 repositionScreenPosition(Vector2 vec)
+			void RepositionViewport(Vector2 vec)
 			{
 				Vector2 vec2 = (vec - mapResolution / 2) / mapScalingFactor;
-				double x = (maxX + minX) / 2 + vec2.X / boardhexDimensions.X;
-				double y = (maxY + minY) / 2 + vec2.Y / boardhexDimensions.Y;
-				return Input.ScreenSize() / 2 - new Vector2((float)x * boardhexDimensions.X, (float)y * boardhexDimensions.Y);
+				double x = centerX + vec2.X / boardhexDimensions.X;
+				double y = centerY + vec2.Y / boardhexDimensions.Y;
+				Vector2 newPosition = Input.ScreenSize() / 2 - new Vector2((float)x * boardhexDimensions.X, (float)y * boardhexDimensions.Y);
+
+				ses.field_4009 = newPosition;
 			}
 
 			this.screenpositionConverter = convertScreenPosition;
-			this.repositionScreen = repositionScreenPosition;
+			this.repositionViewport = RepositionViewport;
 
-			Vector2 convertPosition(HexIndex hex)
+			Vector2 PositionConverter(HexIndex hex)
 			{
-				double x = (hex.Q + hex.R / 2f - (maxX + minX) / 2) * boardhexDimensions.X;
-				double y = (hex.R - (maxY + minY) / 2) * boardhexDimensions.Y;
+				double x = (hex.Q + hex.R / 2f - centerX) * boardhexDimensions.X;
+				double y = (hex.R - centerY) * boardhexDimensions.Y;
 				return mapResolution / 2 + new Vector2((float)x, (float)y) * mapScalingFactor;
 			}
 
-			this.positionConverter = convertPosition;
+			this.positionConverter = PositionConverter;
 		}
 
 		internal override void drawFunction(float deltaTime, Vector2 mapMousePos)
@@ -416,7 +609,7 @@ public static class Navigation
 			}
 
 			// update and draw viewport
-			if (Input.IsLeftClickHeld()) ses.field_4009 = repositionScreen(mapMousePos);
+			if (Input.IsLeftClickHeld()) repositionViewport(mapMousePos);
 
 			Vector2 viewBase = screenpositionConverter(Input.ScreenSize() / 2, ses) - Input.ScreenSize() / 2 * viewScalingFactor;
 			drawViewport(viewBase, Input.ScreenSize() * viewScalingFactor);
