@@ -100,9 +100,6 @@ public static class Navigation
 		PartsMap.addPartHexRule(common.GlyphAnimismus()		, PartsMap.glyphRule);
 		PartsMap.addPartHexRule(common.GlyphUnification()	, PartsMap.glyphRule);
 		PartsMap.addPartHexRule(common.GlyphDispersion()	, PartsMap.glyphRule);
-		PartsMap.addPartHexRule(common.MechanismTrack()		, PartsMap.glyphRule);
-		PartsMap.addPartHexRule(common.GlyphEquilibrium()	, PartsMap.glyphRule);
-		PartsMap.addPartHexRule(common.MechanismTrack()		, PartsMap.glyphRule);
 
 		List<HexIndex> ioHexRule(SolutionEditorScreen ses, Part part)
 		{

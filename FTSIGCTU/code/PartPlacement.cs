@@ -15,6 +15,7 @@ public static class PartPlacement
 	public static bool ignorePartOverlapPlacementRestrictions = false;
 	public static bool ignoreCabinetPlacementRestrictions = false;
 	public static bool allowTrackOverlapDragging = true;
+	public static bool ignoreCabinetTrackRestrictions = false;
 
 	//---------------------------------------------------//
 	//public methods
@@ -22,7 +23,6 @@ public static class PartPlacement
 	{
 		On.Solution.method_1947 += Solution_method_1947;
 		On.Solution.method_1948 += Solution_method_1948;
-		On.Solution.method_1952 += Solution_method_1952;
 	}
 
 	//---------------------------------------------------//
@@ -71,9 +71,23 @@ public static class PartPlacement
 		errorMessageOut = errorMessage;
 		return ret;
 	}
+
+	static void errorLog1952(string header) => Logger.Log("[FTSIGCTU.PartPlacement.Solution_method_1952] Error: " + header
+		+ "\n\tThis crash usually occurs when trying to move a part (such has a conduit) in a production level."
+		+ "\n\tIf this is the case, please follow these instructions:"
+		+ "\n\t\t1. [Optional] Send a copy of this log.txt to the mod developer (isaac.wass / mr_puzzel) through GitHub or Discord."
+		+ "\n\t\t2. Restart modded OpusMagnum."
+		+ "\n\t\t3. Go to FTSIGCTU's mod settings in the \"MODS\" menu."
+		+ "\n\t\t4. Under \"Part-Placement Settings\", UN-CHECK the setting \"Disable cabinet-related track-extension restrictions.\""
+		+ "\nThis should prevent the crash from happening again, but of course, you will not be able to drag track outside of chambers or through chamber walls."
+	);
+
 	public static Maybe<class_189> Solution_method_1952(On.Solution.orig_method_1952 orig, Solution solution_self, HexIndex hex)
 	{
-		//DEBUG: try-catch, just in case we still have problems
+		//NOTE: Adding this functionality has caused some users to experience game crashes.
+		// Specifically, the crash occurs when attempting to move a part in a solution for a production puzzle.
+		// (For some reason, the relevant Solution object is missing or something when this function gets called.)
+		// So now this functionality is loaded/unloaded via a setting.
 		Maybe<class_189> ret = (Maybe<class_189>) struct_18.field_1431;
 		try
 		{
@@ -81,31 +95,30 @@ public static class PartPlacement
 		}
 		catch
 		{
-			Logger.Log("");
-			Logger.Log("[Solution_method_1952] Failed to execute \"ret = orig(solution_self, hex);\"");
-			Logger.Log("<Anataeus> Good lord, the original function failed to work! How come?");
-			Logger.Log("<Henley> The hexIndex seems fine - look, it's equal to (" + hex.Q + ", " + hex.R + ").");
-			Logger.Log("<Anataeus> That just leaves the solution_self object - here, take a look inside.");
-
 			if (solution_self == null)
 			{
-				Logger.Log("<Henley> There's nothing in there at all. Nothing!");
-				Logger.Log("<Anataeus> Oh hell.");
+				errorLog1952("solution_self is null.");
+				throw;
+			}
+			else if (hex == null)
+			{
+				errorLog1952("hex is null.");
+				throw;
+			}
+			else if (solution_self.field_3915 == null || solution_self.method_1934() == null)
+			{
+				errorLog1952("solution_self is malformed or inaccessible.");
 				throw;
 			}
 
-			Logger.Log("<Henley> Oh, there's seems to be a solution of some sort in there. I'll try to pull it out.");
-			Logger.Log("<Anataeus> It's labeled \"" + solution_self.field_3915 + "\", curious. And it makes...");
-			Logger.Log("<Anataeus> It makes \"" + solution_self.method_1934().field_2766 + "\", apparently. Puzzling.");
-			Logger.Log("<Henley> Wait, so then the problem was the original function call?");
-			Logger.Log("<Anataeus> Oh hell.");
+			errorLog1952("failed to execute \"ret = orig(solution_self, hex);\" for unknown reasons.");
 			throw;
 		}
 
 
 		try
 		{
-			if (ignoreCabinetPlacementRestrictions
+			if (ignoreCabinetTrackRestrictions
 				&& !ret.method_1085()
 				&& solution_self.method_1934().field_2779.method_99(out _)
 			)
@@ -116,24 +129,23 @@ public static class PartPlacement
 		}
 		catch
 		{
-			Logger.Log("");
-			Logger.Log("[Solution_method_1952] Failed to run the return block.");
-			Logger.Log("<Anataeus> Good lord, why?!");
-			Logger.Log("<Henley> If it made it past the original function call, then the solution_self should be fine.");
-			Logger.Log("<Anataeus> Maybe not? Here, take a look inside.");
-
 			if (solution_self == null)
 			{
-				Logger.Log("<Henley> There's nothing in there at all! Nothing!!");
-				Logger.Log("<Anataeus> Oh hell.");
+				errorLog1952("solution_self is null.");
+				throw;
+			}
+			else if (hex == null)
+			{
+				errorLog1952("hex is null.");
+				throw;
+			}
+			else if (solution_self.field_3915 == null || solution_self.method_1934() == null)
+			{
+				errorLog1952("solution_self is malformed or inaccessible.");
 				throw;
 			}
 
-			Logger.Log("<Henley> Yep, there's the solution, plain as day.");
-			Logger.Log("<Anataeus> And it's labeled \"" + solution_self.field_3915 + "\", apparently. And it makes...");
-			Logger.Log("<Anataeus> Ah, it makes \"" + solution_self.method_1934().field_2766 + "\". Delightful.");
-			Logger.Log("<Henley> Wait, so what caused the problem?");
-			Logger.Log("<Anataeus> Oh hell.");
+			errorLog1952("failed to execute \"ret = orig(solution_self, hex);\" for unknown reasons.");
 			throw;
 		}
 	}

@@ -86,6 +86,8 @@ public class MainClass : QuintessentialMod
 			public bool allowTrackOverlapDragging = false;
 			[SettingsLabel("Disable cabinet-related part-placement restrictions.")]
 			public bool ignoreCabinetPlacementRestrictions = false;
+			[SettingsLabel("Disable cabinet-related track-extension restrictions.")]
+			public bool ignoreCabinetTrackRestrictions = false;
 			[SettingsLabel("Ignore part allowances (i.e. permit multiple disposals, etc).")]
 			public bool ignorePartAllowances = false;
 			[SettingsLabel("Allow duplicate inputs and outputs.")]
@@ -168,6 +170,20 @@ public class MainClass : QuintessentialMod
 		PartPlacement.ignorePartOverlapPlacementRestrictions = SET.partPlacementSettings.ignorePartOverlapPlacementRestrictions;
 		PartPlacement.allowTrackOverlapDragging = SET.partPlacementSettings.allowTrackOverlapDragging;
 		PartPlacement.ignoreCabinetPlacementRestrictions = SET.partPlacementSettings.ignoreCabinetPlacementRestrictions;
+
+		var newValue = SET.partPlacementSettings.ignoreCabinetTrackRestrictions;
+		var oldValue = PartPlacement.ignoreCabinetTrackRestrictions;
+		PartPlacement.ignoreCabinetTrackRestrictions = newValue;
+		if (oldValue && !newValue)
+		{
+			//setting was turned off
+			On.Solution.method_1952 -= PartPlacement.Solution_method_1952;
+		}
+		else if (!oldValue && newValue)
+		{
+			//setting was turned on
+			On.Solution.method_1952 += PartPlacement.Solution_method_1952;
+		}
 
 		SpeedTray.speedtrayZoomtoolWorkaround = SET.miscellaneousEditingSettings.speedtrayZoomtoolWorkaround;
 

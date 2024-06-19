@@ -12,7 +12,7 @@ namespace FTSIGCTU;
 
 public static class InstructionEditor
 {
-	static bool PressedExpandKey() => MainClass.MySettings.Instance.instructionEditingSettings.expandResetOrRepeat.Pressed(); /////////////////////////////////////////////////////// not ready yet
+	static bool PressedExpandKey() => MainClass.MySettings.Instance.instructionEditingSettings.expandResetOrRepeat.Pressed();
 	static bool PressedHighlightArmKey() => MainClass.MySettings.Instance.instructionEditingSettings.highlightInstructionsOnArm.Pressed();
 	static bool PressedUnhighlightArmKey() => MainClass.MySettings.Instance.instructionEditingSettings.unhighlightInstructionsOnArm.Pressed();
 
