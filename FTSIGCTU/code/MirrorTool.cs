@@ -106,7 +106,7 @@ public static class MirrorTool
 	/// An action that applies a rotation to the part.
 	/// </summary>
 	public static void shiftRotation(Part part, HexRotation rot) => new DynamicData(part).Set("field_2693", part.method_1163() + rot);
-
+    
 	/// <summary>
 	/// An action that mirrors the Rotate and Pivot instructions of the part's instruction tape.
 	/// </summary>
@@ -435,8 +435,8 @@ public static class MirrorTool
 	{
 		var current_interface = SES_self.field_4010;
 		bool inDraggingMode = current_interface.GetType() == new PartDraggingInputMode().GetType();
-		bool mirrorHorz = Input.IsSdlKeyPressed(mirrorHorizontalKey);
-		bool mirrorVert = Input.IsSdlKeyPressed(mirrorVerticalKey);
+		bool mirrorHorz = Input.IsSdlKeyPressed(class_203.method_542(mirrorHorizontalKey));
+		bool mirrorVert = Input.IsSdlKeyPressed(class_203.method_542(mirrorVerticalKey));
 
 		// exit early if wrong mode
 		if (!inDraggingMode) return;
