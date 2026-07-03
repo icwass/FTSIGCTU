@@ -22,6 +22,7 @@ public class MainClass : QuintessentialMod
 {
 	public static MethodInfo PublicMethod<T>(string method) => typeof(T).GetMethod(method, BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
 	public static MethodInfo PrivateMethod<T>(string method) => typeof(T).GetMethod(method, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+	public static FieldInfo PrivateField<T>(string field) => typeof(T).GetField(field, BindingFlags.NonPublic | BindingFlags.Instance);
 	public override Type SettingsType => typeof(MySettings);
 
 	public static QuintessentialMod MainClassAsMod;
@@ -141,6 +142,8 @@ public class MainClass : QuintessentialMod
 			public bool enableDebugTray = false;
 			[SettingsLabel("Change the speedtray for ZoomTool compatibility.")]
 			public bool speedtrayZoomtoolWorkaround = false;
+			[SettingsLabel("Ignore vanilla warnings in the molecule editor.")]
+			public bool ignoreVanillaMoleculeWarnings = false;
 		}
 	}
 	public override void ApplySettings()
@@ -158,9 +161,11 @@ public class MainClass : QuintessentialMod
 
 		InstructionEditor.ApplySettings(SET.instructionEditingSettings.drawBlanksOnProgrammingTray, SET.instructionEditingSettings.allowMultipleOverrides);
 
+		MetricDisplay.writeGoldNotCost = SET.displayEditingSettings.writeGoldNotCost;
+
 		Miscellaneous.allowWrongNumberOfOutputs = SET.partPlacementSettings.allowWrongNumberOfOutputs;
 
-		MetricDisplay.writeGoldNotCost = SET.displayEditingSettings.writeGoldNotCost;
+		MoleculeEditor.ignoreVanillaMoleculeWarnings = SET.miscellaneousEditingSettings.ignoreVanillaMoleculeWarnings;
 
 		Navigation.showCritelliOnMap = SET.displayEditingSettings.showCritelliOnMap;
 
@@ -208,11 +213,13 @@ public class MainClass : QuintessentialMod
 		DebugParts.LoadPuzzleContent();
 		MetricDisplay.LoadPuzzleContent();
 		Navigation.LoadPuzzleContent();
+		MoleculeEditor.LoadPuzzleContent();
 	}
 
 	public override void Unload()
 	{
 		InstructionEditor.Unload();
+		MoleculeEditor.Unload();
 	}
 
 	//------------------------- END HOOKING -------------------------//
