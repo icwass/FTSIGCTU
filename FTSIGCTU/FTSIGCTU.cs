@@ -142,8 +142,8 @@ public class MainClass : QuintessentialMod
 			public bool enableDebugTray = false;
 			[SettingsLabel("Change the speedtray for ZoomTool compatibility.")]
 			public bool speedtrayZoomtoolWorkaround = false;
-			[SettingsLabel("Allow disjoint molecules in puzzle editor.")]
-			public bool allowDisjointMolecules = false;
+			[SettingsLabel("Ignore vanilla warnings in the molecule editor.")]
+			public bool ignoreVanillaMoleculeWarnings = false;
 		}
 	}
 	public override void ApplySettings()
@@ -165,7 +165,7 @@ public class MainClass : QuintessentialMod
 
 		Miscellaneous.allowWrongNumberOfOutputs = SET.partPlacementSettings.allowWrongNumberOfOutputs;
 
-		MoleculeEditor.allowDisjointMolecules = SET.miscellaneousEditingSettings.allowDisjointMolecules;
+		MoleculeEditor.ignoreVanillaMoleculeWarnings = SET.miscellaneousEditingSettings.ignoreVanillaMoleculeWarnings;
 
 		Navigation.showCritelliOnMap = SET.displayEditingSettings.showCritelliOnMap;
 

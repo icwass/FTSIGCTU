@@ -14,7 +14,7 @@ namespace FTSIGCTU;
 public static class MoleculeEditor
 {
 	//data structs, enums, variables
-	public static bool allowDisjointMolecules = false;
+	public static bool ignoreVanillaMoleculeWarnings = false;
 	private static IDetour hook_MoleculeEditorScreen_method_1132;
 
     private delegate void orig_MoleculeEditorScreen_method_1132(MoleculeEditorScreen self);
@@ -52,96 +52,33 @@ public static class MoleculeEditor
 
 	private static void CheckIfMoleculeLegal(orig_MoleculeEditorScreen_method_1132 orig, MoleculeEditorScreen editor_self)
 	{
+        orig(editor_self);
 
-		if (!allowDisjointMolecules) {
-			orig(editor_self);
-			return;
-		}
-		
-		Maybe<LocString> error_message = struct_18.field_1431;
-		Molecule molecule = (Molecule)MainClass.PrivateField<MoleculeEditorScreen>("field_2656").GetValue(editor_self);
-	
+        if (!ignoreVanillaMoleculeWarnings)
+        {
+            // nothing to do, so we're done already
+            return;
+        }
 
-		if (!molecule.method_1100().ContainsKey(new HexIndex(0, 0)))
-		{
-			error_message = class_134.method_253("There must be an atom at the center of the board.", string.Empty);
-			goto OutputValue;
-		}
-		if (molecule.method_1100().Values.Count(CheckIfRepetition) > 1)
-		{
-			error_message = class_134.method_253("Only one repetition placeholder may be used.", string.Empty);
-			goto OutputValue;
-		}
-		Maybe<HexIndex> maybe = molecule.method_1100().Where(CheckRepetitionLocation).Select(GetHexIndexKey)
-			.method_430();
-		if (maybe.method_1085() && (maybe.method_1087().Q <= 0 || maybe.method_1087().R != 0))
-		{
-			error_message = class_134.method_253("If used, the repetition placeholder must be to the right of the center atom.", string.Empty);
-			goto OutputValue;
-		}
-		HashSet<HexIndex> hashSet = new HashSet<HexIndex>();
-		Queue<HexIndex> queue = new Queue<HexIndex>();
-		queue.Enqueue(new HexIndex(0, 0));
-		while (queue.Count > 0)
-		{
-			MoleculeEditorScreen.class_354 class_357 = new MoleculeEditorScreen.class_354();
-			class_357.field_2662 = queue.Dequeue();
-			hashSet.Add(class_357.field_2662);
-			HexIndex[] adjacentOffsets = HexIndex.AdjacentOffsets;
-			foreach (HexIndex hexIndex in adjacentOffsets)
-			{
-				MoleculeEditorScreen.class_355 class_358 = new MoleculeEditorScreen.class_355();
-				class_358.field_2664 = class_357;
-				class_358.field_2663 = class_358.field_2664.field_2662 + hexIndex;
+        Maybe<LocString> maybeError = (Maybe<LocString>) MainClass.PrivateField<MoleculeEditorScreen>("field_2661").GetValue(editor_self);
+        if (!maybeError.method_1085())
+        {
+            // no error, no problem!
+            return;
+        }
 
-				MethodInfo method_1135 = MainClass.PrivateMethod<MoleculeEditorScreen.class_355>("method_1135");
+        LocString errorMessage = maybeError.method_1087();
 
-				// i'm not sure how to acccess method_1135 for the purposes of this, but technically i don't actually need to! since the only time this code will run will be if disjoint molecules are allowed,
-				// i can just sort of... ignore it, for now. it is something that absolutely needs to be fixed if this was expanded to disable more warnings, but i don't think any of the other warnings actually
-				// benefit from being disabled yet. 
-
-				//if (!hashSet.Contains(class_358.field_2663) && !queue.Contains(class_358.field_2663) && molecule.method_1101().Any((Func<class_277, bool>)method_1135.CreateDelegate(typeof(Func<class_277, bool>))))
-				//{
-				//	queue.Enqueue(class_358.field_2663);
-				//}
-			}
-		}
-		if (hashSet.Count != molecule.method_1100().Count && !allowDisjointMolecules)
-		{
-			error_message = class_134.method_253("All atoms must be connected.", string.Empty);
-			goto OutputValue;
-		}
-		using (molecule.method_1101().GetEnumerator())
-		{
-		}
-		if (!maybe.method_1085())
-		{
-			goto OutputValue;
-		}
-		int q = maybe.method_1087().Q;
-		foreach (KeyValuePair<HexIndex, Atom> item in molecule.method_1100())
-		{
-			if (item.Value.field_2275 == class_175.field_1689)
-			{
-				continue;
-			}
-			for (int j = -2; j <= 2; j++)
-			{
-				if (j != 0)
-				{
-					HexIndex key = item.Key + new HexIndex(j * q, 0);
-					if (molecule.method_1100().TryGetValue(key, out var value) && value.field_2275 != class_175.field_1689)
-					{
-						error_message = class_134.method_253("Repeating this pattern to the right would cause atoms to overlap.", string.Empty);
-						goto OutputValue;
-					}
-				}
-			}
-		}
-
-		OutputValue:
-		MainClass.PrivateField<MoleculeEditorScreen>("field_2661").SetValue(editor_self, error_message);
-		return;
-	
-	}
+        if (maybeError == class_134.method_253("There must be an atom at the center of the board.", string.Empty)
+            || maybeError == class_134.method_253("Only one repetition placeholder may be used.", string.Empty)
+            || maybeError == class_134.method_253("If used, the repetition placeholder must be to the right of the center atom.", string.Empty)
+            || maybeError == class_134.method_253("All atoms must be connected.", string.Empty)
+            || maybeError == class_134.method_253("Triplex bonds may only be created between fire atoms.", string.Empty)
+            || maybeError == class_134.method_253("Repeating this pattern to the right would cause atoms to overlap.", string.Empty)
+            )
+        {
+            // ignore the vanilla error
+            MainClass.PrivateField<MoleculeEditorScreen>("field_2661").SetValue(editor_self, (Maybe<LocString>) struct_18.field_1431);
+        }
+    }
 }
